@@ -838,19 +838,18 @@ function buscarDebounce(){
   srchTimer=setTimeout(buscar,300);
 }
 
-async function buscar(){
+function buscar(){
   const q=(document.getElementById('srch').value||'').toLowerCase().trim();
-  const c=document.getElementById('srch-results');
+  const src=document.getElementById('srch-source');
 
-  if(!sheetLoaded){
-    if(!cfg.sheetsUrl){buscarLocal(q,c);return;}
-    return; // esperar que cargarSheetData termine
-  }
+  // Si el Sheet está cargado usarlo, si no usar local
+  const base=sheetLoaded&&sheetData.length>0 ? sheetData : records.map(r=>({...r,_local:true}));
+  const esLocal=!(sheetLoaded&&sheetData.length>0);
 
-  // Combinar sheetData + records locales
-  const localNombres=new Set(records.map(r=>r.nombreCarpeta));
-  const sheetFiltered=sheetData.filter(r=>!localNombres.has(r.nombreCarpeta));
-  let todos=[...records.map(r=>({...r,_local:true})),...sheetFiltered];
+  // Marcar registros locales
+  let todos=sheetLoaded&&sheetData.length>0
+    ? sheetData.map(r=>({...r,_local:false}))
+    : records.map(r=>({...r,_local:true}));
 
   // Filtrar por pestaña
   if(srchFiltro) todos=todos.filter(r=>r.pestana===srchFiltro);
@@ -863,19 +862,9 @@ async function buscar(){
         (r.kundens||[]).some(k=>k.toLowerCase().includes(q))||
         (r.modelos||[]).some(m=>m.toLowerCase().includes(q))
       )
-    :todos.slice(-50).reverse();
+    :todos.slice().reverse().slice(0,50);
 
-  renderResultados(res);
-}
-
-function buscarLocal(q,c){
-  const res=q||srchFiltro
-    ?records.filter(r=>{
-        const mQ=!q||(r.nombreCarpeta||'').toLowerCase().includes(q)||(r.responsable||'').toLowerCase().includes(q)||(r.kundens||[]).some(k=>k.toLowerCase().includes(q))||(r.modelos||[]).some(m=>m.toLowerCase().includes(q));
-        const mP=!srchFiltro||r.pestana===srchFiltro;
-        return mQ&&mP;
-      })
-    :records.slice().reverse().slice(0,30);
+  src.textContent=(esLocal?'Registros locales':'Sheet · '+todos.length+' carpetas')+' · '+res.length+' resultado(s)';
   renderResultados(res);
 }
 
@@ -1023,10 +1012,7 @@ function saveEdit(){
     }
   }
   closeModal();
-  // Refrescar lista
-  sheetLoaded=false;
-  localStorage.removeItem(CACHE_KEY);
-  cargarSheetData(true);
+  buscar();
   showToast('Cambios guardados ✓','success');
   document.getElementById('toast').style.display='block';
 }

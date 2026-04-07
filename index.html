@@ -1023,15 +1023,10 @@ function saveEdit(){
     }
   }
   closeModal();
-  // Refrescar resultados visibles sin recargar todo
-  if(window._srchResults){
-    window._srchResults=window._srchResults.map((x,i)=>{
-      if(editIdx!==null&&x._local&&records[editIdx]&&x.id===records[editIdx].id) return {...records[editIdx],_local:true};
-      if(window._editSheetIdx!==undefined&&i===window._editSheetIdx) return window._editSheetRecord;
-      return x;
-    });
-    renderResultados(window._srchResults);
-  }
+  // Refrescar lista
+  sheetLoaded=false;
+  localStorage.removeItem(CACHE_KEY);
+  cargarSheetData(true);
   showToast('Cambios guardados ✓','success');
   document.getElementById('toast').style.display='block';
 }

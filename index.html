@@ -488,6 +488,8 @@ const DB='piagui_v3',CFG='piagui_cfg3';
 const SHEETS_URL_DEFAULT='https://script.google.com/macros/s/AKfycbyq8e5VFk3ZSJpre79wj08hmLJExsOQ05L4yoG3yzk2T9S4rmtKAkdm2sHPnUZxP9G0/exec';
 let records=JSON.parse(localStorage.getItem(DB)||'[]');
 let cfgStored=JSON.parse(localStorage.getItem(CFG)||'{}');
+// Siempre usar la URL hardcodeada si no hay una guardada manualmente
+if(!cfgStored.sheetsUrl){cfgStored.sheetsUrl=SHEETS_URL_DEFAULT;localStorage.setItem(CFG,JSON.stringify(cfgStored));}
 let cfg={pin:cfgStored.pin||'1234', sheetsUrl:cfgStored.sheetsUrl||SHEETS_URL_DEFAULT};
 let kundens=[]; // col B — numérico o H...
 let modelos=[];  // col E — texto

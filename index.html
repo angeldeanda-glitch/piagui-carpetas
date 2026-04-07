@@ -416,6 +416,8 @@ select:focus,input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(26
       <button class="sf-btn" onclick="setFiltro('VIDEOS 360',this)">Videos 360</button>
       <button class="sf-btn" onclick="setFiltro('CLIENTES ESPECIALES',this)">Clientes Esp.</button>
       <button class="sf-btn" onclick="setFiltro('TOMAS ESPECIALES / COMPLEMENTOS',this)">Tomas Esp.</button>
+      <button class="sf-btn" style="background:var(--red-light);color:var(--red-text);border-color:#fecaca;" onclick="setFiltroEntregado('pendiente',this)">⏳ Pendientes</button>
+      <button class="sf-btn" style="background:var(--green-light);color:var(--green-text);border-color:#bbf7d0;" onclick="setFiltroEntregado('entregado',this)">✓ Entregadas</button>
     </div>
     <div class="search-source" id="srch-source"></div>
     <div id="srch-results"></div>
@@ -775,6 +777,7 @@ function renderReports(){
 
 // ── BUSCAR ────────────────────────────────────────────────────────────────────
 let srchFiltro='';
+let srchFiltroEntregado=''; // 'pendiente', 'entregado' o ''
 let srchTimer=null;
 let srchCache={};
 let sheetData=[];
@@ -809,17 +812,22 @@ function cargarSheetData(forzar){
   const controller=new AbortController();
   const timer=setTimeout(()=>controller.abort(),30000);
   fetch(cfg.sheetsUrl+'?action=all&pestana=',{signal:controller.signal})
-    .then(r=>r.json())
-    .then(data=>{
+    .then(r=>{
       clearTimeout(timer);
+      return r.text();
+    })
+    .then(txt=>{
+      let data;
+      try{data=JSON.parse(txt);}catch(e){throw new Error('Respuesta inválida');}
       if(data.status==='ok'){
         sheetData=data.results||[];
         sheetLoaded=true;
         localStorage.setItem(CACHE_KEY,JSON.stringify({data:sheetData,ts:Date.now()}));
         document.getElementById('srch-source').innerHTML=`Sheet cargado · ${sheetData.length} carpetas · <a href="#" onclick="cargarSheetData(true);return false;" style="color:var(--blue-text)">Recargar</a>`;
-      }else{throw new Error(data.message);}
+      }else{throw new Error(data.message||'Error desconocido');}
     })
-    .catch(()=>{
+    .catch(e=>{
+      console.log('Error cargando Sheet:',e.message);
       document.getElementById('srch-source').textContent='No se pudo cargar el Sheet — usando registros locales';
       sheetData=[];sheetLoaded=true;
     })
@@ -828,6 +836,15 @@ function cargarSheetData(forzar){
 
 function setFiltro(p,el){
   srchFiltro=p;
+  srchFiltroEntregado='';
+  document.querySelectorAll('.sf-btn').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+  buscar();
+}
+
+function setFiltroEntregado(tipo,el){
+  srchFiltroEntregado=tipo;
+  srchFiltro='';
   document.querySelectorAll('.sf-btn').forEach(x=>x.classList.remove('active'));
   el.classList.add('active');
   buscar();
@@ -853,6 +870,10 @@ function buscar(){
 
   // Filtrar por pestaña
   if(srchFiltro) todos=todos.filter(r=>r.pestana===srchFiltro);
+
+  // Filtrar por estatus entregado
+  if(srchFiltroEntregado==='pendiente') todos=todos.filter(r=>!r.entregado);
+  if(srchFiltroEntregado==='entregado') todos=todos.filter(r=>!!r.entregado);
 
   // Filtrar por búsqueda
   const res=q

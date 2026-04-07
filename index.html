@@ -407,6 +407,7 @@ select:focus,input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(26
     <div class="search-bar">
       <input type="text" id="srch" placeholder="Nombre, Kunden, Modelo, pestaña, responsable…" oninput="buscarDebounce()">
       <button class="add-btn" onclick="buscar()">Buscar</button>
+      <button class="add-btn" onclick="localStorage.removeItem(CACHE_KEY);sheetLoaded=false;sheetData=[];cargarSheetData(true);" style="background:var(--blue-light);color:var(--blue-text);border-color:#bfdbfe;">↺ Recargar</button>
     </div>
     <div class="search-filters">
       <button class="sf-btn active" onclick="setFiltro('',this)">Todas</button>

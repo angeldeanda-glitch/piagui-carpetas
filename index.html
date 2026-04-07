@@ -400,13 +400,24 @@ select:focus,input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(26
   <div id="rep-mensual" class="rep-content"></div>
 </div>
 
-<!-- ══════════ BUSCAR ══════════ -->
+  <!-- ══════════ BUSCAR ══════════ -->
 <div id="page-buscar" class="page">
   <div class="card">
     <div class="card-title">Buscar y editar carpetas</div>
     <div class="search-bar">
-      <input type="text" id="srch" placeholder="Nombre, Kunden, Modelo, pestaña, responsable…" oninput="buscar()">
+      <input type="text" id="srch" placeholder="Nombre, Kunden, Modelo, pestaña, responsable…" oninput="buscarDebounce()">
+      <button class="add-btn" onclick="buscar()">Buscar</button>
     </div>
+    <div class="search-filters">
+      <button class="sf-btn active" onclick="setFiltro('',this)">Todas</button>
+      <button class="sf-btn" onclick="setFiltro('FOTO VENTAS',this)">Foto Ventas</button>
+      <button class="sf-btn" onclick="setFiltro('FOTO CATALOGACIÓN',this)">Foto Catalogación</button>
+      <button class="sf-btn" onclick="setFiltro('FOTO IMPULSOS',this)">Foto Impulsos</button>
+      <button class="sf-btn" onclick="setFiltro('VIDEOS 360',this)">Videos 360</button>
+      <button class="sf-btn" onclick="setFiltro('CLIENTES ESPECIALES',this)">Clientes Esp.</button>
+      <button class="sf-btn" onclick="setFiltro('TOMAS ESPECIALES / COMPLEMENTOS',this)">Tomas Esp.</button>
+    </div>
+    <div class="search-source" id="srch-source"></div>
     <div id="srch-results"></div>
   </div>
 </div>
@@ -552,7 +563,7 @@ function showPage(p){
   document.querySelectorAll('.nav-btn').forEach((x,i)=>x.classList.toggle('active',i==={registro:0,reportes:1,buscar:2,config:3}[p]));
   document.getElementById('page-'+p).classList.add('active');
   if(p==='reportes')renderReports();
-  if(p==='buscar')buscar();
+  if(p==='buscar')cargarSheetData(false);
   if(p==='config')updateConfigUI();
 }
 
@@ -764,96 +775,128 @@ function renderReports(){
 let srchFiltro='';
 let srchTimer=null;
 let srchCache={};
-let sheetData=[]; // todos los registros del Sheet cargados al abrir Buscar
+let sheetData=[];
 let sheetLoaded=false;
 let sheetLoading=false;
+
+// Función requerida por showPage
+function cargarSheetData(forzar){
+  if(!cfg.sheetsUrl){
+    document.getElementById('srch-source').textContent='Sin conexión a Sheets — mostrando registros locales';
+    sheetLoaded=true;sheetData=[];buscar();return;
+  }
+  if(!forzar&&sheetLoaded){buscar();return;}
+  if(sheetLoading)return;
+  sheetLoading=true;
+  sheetLoaded=false;
+  document.getElementById('srch-results').innerHTML='<div class="searching-indicator">Cargando carpetas del Sheet…</div>';
+
+  // Intentar caché local primero
+  if(!forzar){
+    try{
+      const cached=JSON.parse(localStorage.getItem(CACHE_KEY)||'null');
+      if(cached&&cached.data&&cached.ts&&(Date.now()-cached.ts)<CACHE_TTL){
+        sheetData=cached.data;sheetLoaded=true;sheetLoading=false;
+        const mins=Math.round((Date.now()-cached.ts)/60000);
+        document.getElementById('srch-source').innerHTML=`Sheet en caché · ${sheetData.length} carpetas · hace ${mins} min · <a href="#" onclick="cargarSheetData(true);return false;" style="color:var(--blue-text)">Recargar</a>`;
+        buscar();return;
+      }
+    }catch(e){}
+  }
+
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),30000);
+  fetch(cfg.sheetsUrl+'?action=all&pestana=',{signal:controller.signal})
+    .then(r=>r.json())
+    .then(data=>{
+      clearTimeout(timer);
+      if(data.status==='ok'){
+        sheetData=data.results||[];
+        sheetLoaded=true;
+        localStorage.setItem(CACHE_KEY,JSON.stringify({data:sheetData,ts:Date.now()}));
+        document.getElementById('srch-source').innerHTML=`Sheet cargado · ${sheetData.length} carpetas · <a href="#" onclick="cargarSheetData(true);return false;" style="color:var(--blue-text)">Recargar</a>`;
+      }else{throw new Error(data.message);}
+    })
+    .catch(()=>{
+      document.getElementById('srch-source').textContent='No se pudo cargar el Sheet — usando registros locales';
+      sheetData=[];sheetLoaded=true;
+    })
+    .finally(()=>{sheetLoading=false;buscar();});
+}
 
 function setFiltro(p,el){
   srchFiltro=p;
   document.querySelectorAll('.sf-btn').forEach(x=>x.classList.remove('active'));
   el.classList.add('active');
-  srchCache={};
   buscar();
 }
 
 function buscarDebounce(){
   clearTimeout(srchTimer);
-  srchTimer=setTimeout(buscar,400);
+  srchTimer=setTimeout(buscar,300);
 }
 
 async function buscar(){
-  const q=(document.getElementById('srch').value||'').trim();
+  const q=(document.getElementById('srch').value||'').toLowerCase().trim();
   const c=document.getElementById('srch-results');
-  const src=document.getElementById('srch-source');
 
-  // Sin URL configurada → directo a local, sin esperar
-  if(!cfg.sheetsUrl){
-    src.textContent='Sin conexión a Sheets — mostrando registros locales';
-    buscarLocal(q,c);
-    return;
+  if(!sheetLoaded){
+    if(!cfg.sheetsUrl){buscarLocal(q,c);return;}
+    return; // esperar que cargarSheetData termine
   }
 
-  // Con Sheets → revisar caché primero
-  const cacheKey=q+'|'+srchFiltro;
-  if(srchCache[cacheKey]){
-    renderResultados(srchCache[cacheKey],true);
-    src.textContent='Resultados del Google Sheet (caché) · '+srchCache[cacheKey].length+' encontrados';
-    return;
-  }
+  // Combinar sheetData + records locales
+  const localNombres=new Set(records.map(r=>r.nombreCarpeta));
+  const sheetFiltered=sheetData.filter(r=>!localNombres.has(r.nombreCarpeta));
+  let todos=[...records.map(r=>({...r,_local:true})),...sheetFiltered];
 
-  // Llamada al Sheet con timeout de 8s
-  c.innerHTML='<div class="searching-indicator">Buscando en Google Sheets…</div>';
-  try{
-    const controller=new AbortController();
-    const timer=setTimeout(()=>controller.abort(),8000);
-    const url=cfg.sheetsUrl+'?action=search&q='+encodeURIComponent(q)+'&pestana='+encodeURIComponent(srchFiltro);
-    const resp=await fetch(url,{signal:controller.signal});
-    clearTimeout(timer);
-    const data=await resp.json();
-    if(data.status==='ok'){
-      srchCache[cacheKey]=data.results;
-      renderResultados(data.results,true);
-      src.textContent='Google Sheet · '+data.results.length+' resultados';
-    } else {
-      throw new Error(data.message);
-    }
-  }catch(err){
-    src.textContent='No se pudo conectar al Sheet — mostrando registros locales';
-    buscarLocal(q,c);
-  }
+  // Filtrar por pestaña
+  if(srchFiltro) todos=todos.filter(r=>r.pestana===srchFiltro);
+
+  // Filtrar por búsqueda
+  const res=q
+    ?todos.filter(r=>
+        (r.nombreCarpeta||'').toLowerCase().includes(q)||
+        (r.responsable||'').toLowerCase().includes(q)||
+        (r.kundens||[]).some(k=>k.toLowerCase().includes(q))||
+        (r.modelos||[]).some(m=>m.toLowerCase().includes(q))
+      )
+    :todos.slice(-50).reverse();
+
+  renderResultados(res);
 }
 
 function buscarLocal(q,c){
   const res=q||srchFiltro
     ?records.filter(r=>{
-        const matchQ=!q||(r.nombreCarpeta||'').toLowerCase().includes(q)||(r.pestana||'').toLowerCase().includes(q)||(r.responsable||'').toLowerCase().includes(q)||(r.kundens||[]).some(k=>k.toLowerCase().includes(q))||(r.modelos||[]).some(m=>m.toLowerCase().includes(q));
-        const matchP=!srchFiltro||r.pestana===srchFiltro;
-        return matchQ&&matchP;
+        const mQ=!q||(r.nombreCarpeta||'').toLowerCase().includes(q)||(r.responsable||'').toLowerCase().includes(q)||(r.kundens||[]).some(k=>k.toLowerCase().includes(q))||(r.modelos||[]).some(m=>m.toLowerCase().includes(q));
+        const mP=!srchFiltro||r.pestana===srchFiltro;
+        return mQ&&mP;
       })
     :records.slice().reverse().slice(0,30);
-  renderResultados(res,false);
+  renderResultados(res);
 }
 
-function renderResultados(items,fromSheets){
+function renderResultados(items){
   const c=document.getElementById('srch-results');
   if(!items||!items.length){c.innerHTML='<div class="empty-state">Sin resultados</div>';return;}
+  window._srchResults=items;
   c.innerHTML=items.slice(0,100).map((r,i)=>{
-    // Para resultados del Sheet usamos sheetRow; para locales usamos índice en records
-    const isLocal=!fromSheets;
-    const idx=isLocal?records.indexOf(r):null;
-    const clickFn=isLocal?`openEdit(${idx})`:`openEditSheet(${i})`;
+    const isLocal=!!r._local;
+    const idx=isLocal?records.findIndex(x=>x.id===r.id):-1;
+    const clickFn=isLocal&&idx>=0?`openEdit(${idx})`:`openEditSheet(${i})`;
     const fd=r.timestamp?fmtDt(r.timestamp):(r.sheetRow?'Fila '+r.sheetRow:'—');
-    return `<div class="result-card" onclick="${clickFn}" data-idx="${i}" data-from-sheets="${fromSheets}">
+    return `<div class="result-card" onclick="${clickFn}">
       <div class="rc-name">${r.nombreCarpeta}</div>
       <div class="rc-meta">
         <span class="pbadge">${r.pestana}</span>
-        <span>${r.cantSku||((r.kundens||[]).length+(r.modelos||[]).length)} SKUs</span>
+        <span>${r.cantSku||(r.kundens||[]).length+(r.modelos||[]).length} SKUs</span>
         <span>${(r.kundens||[]).length} Kundens · ${(r.modelos||[]).length} Modelos</span>
         <span>${r.responsable||''}</span>
         <span>${fd}</span>
         <label onclick="event.stopPropagation()" style="display:flex;align-items:center;gap:5px;cursor:pointer;margin-left:auto;">
-          <input type="checkbox" ${r.entregado?'checked':''} 
-            onchange="toggleEntregadoSheet(${JSON.stringify(r).replace(/"/g,'&quot;')},this.checked,${i},${fromSheets})"
+          <input type="checkbox" ${r.entregado?'checked':''}
+            onchange="toggleEntregadoItem(${i},this.checked,${isLocal},${idx})"
             onclick="event.stopPropagation()"
             style="width:16px;height:16px;accent-color:var(--green);cursor:pointer;">
           <span style="font-size:11px;font-weight:500;color:${r.entregado?'var(--green-text)':'var(--text-hint)'}">
@@ -863,23 +906,14 @@ function renderResultados(items,fromSheets){
       </div>
     </div>`;
   }).join('');
-  // guardar referencia para modal
-  window._srchResults=items;
-  window._srchFromSheets=fromSheets;
 }
 
-// Toggle entregado — local o Sheet
-async function toggleEntregadoSheet(r,val,i,fromSheets){
-  if(fromSheets&&cfg.sheetsUrl&&r.sheetRow){
-    try{
-      await fetch(cfg.sheetsUrl,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({action:'updateEntregado',pestana:r.pestana,sheetRow:r.sheetRow,entregado:val})});
-    }catch(e){}
-    if(window._srchResults&&window._srchResults[i])window._srchResults[i].entregado=val;
-    srchCache={};
-  } else {
-    const idx=records.indexOf(r);
-    if(idx>=0){records[idx].entregado=val;saveR();}
+async function toggleEntregadoItem(i,val,isLocal,localIdx){
+  const r=window._srchResults[i];
+  if(isLocal&&localIdx>=0){records[localIdx].entregado=val;saveR();}
+  else if(r&&cfg.sheetsUrl&&r.sheetRow){
+    if(r)r.entregado=val;
+    try{await fetch(cfg.sheetsUrl,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'updateEntregado',pestana:r.pestana,sheetRow:r.sheetRow,entregado:val})});}catch(e){}
   }
 }
 

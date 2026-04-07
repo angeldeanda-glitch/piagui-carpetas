@@ -636,7 +636,9 @@ function gen(){
   document.getElementById('prev-ms').textContent=ms||'—';
   document.getElementById('prev-sku').textContent=sf||'—';
   const campos=[
-    {v:ms,req:true,fused:true},{v:tmp,req:true},{v:yr,req:true},{v:mkt,req:true},
+    {v:ms,req:true,fused:true},
+    {v:tmp&&yr?tmp+yr:'',req:true,fused:true},
+    {v:mkt,req:true},
     {v:sf,req:true,fused:true},{v:fecha,req:true},{v:col},{v:sub},{v:proc},{v:cat},{v:prio}
   ].filter(c=>c.v);
   const nombre=campos.length?campos.map(c=>c.v).join('_'):'—';
@@ -986,17 +988,50 @@ function openEdit(idx){
 function closeModal(){document.getElementById('modal').classList.remove('open');editIdx=null;}
 
 function saveEdit(){
-  if(editIdx===null)return;
-  const r=records[editIdx];
-  r.nombreCarpeta=document.getElementById('e-nombre').value.trim();
-  r.pestana=document.getElementById('e-pestana').value;
-  r.responsable=document.getElementById('e-resp').value.trim();
-  r.cantSku=document.getElementById('e-csku').value;
-  r.kundens=document.getElementById('e-kundens').value.split(/[\s,;]+/).filter(Boolean);
-  r.modelos=document.getElementById('e-modelos').value.split(/\n+/).map(x=>x.trim()).filter(Boolean);
-  r.entregado=document.getElementById('e-entregado').checked;
-  r.editadoEn=new Date().toISOString();
-  saveR();closeModal();buscar();
+  if(editIdx===null&&!window._editSheetRecord)return;
+  if(editIdx!==null){
+    // Edición local
+    const r=records[editIdx];
+    r.nombreCarpeta=document.getElementById('e-nombre').value.trim();
+    r.pestana=document.getElementById('e-pestana').value;
+    r.responsable=document.getElementById('e-resp').value.trim();
+    r.cantSku=document.getElementById('e-csku').value;
+    r.kundens=document.getElementById('e-kundens').value.split(/[\s,;]+/).filter(Boolean);
+    r.modelos=document.getElementById('e-modelos').value.split(/\n+/).map(x=>x.trim()).filter(Boolean);
+    r.entregado=document.getElementById('e-entregado').checked;
+    r.editadoEn=new Date().toISOString();
+    saveR();
+  } else {
+    // Edición desde Sheet — actualizar en sheetData y enviar al Apps Script
+    const r=window._editSheetRecord;
+    const i=window._editSheetIdx;
+    r.nombreCarpeta=document.getElementById('e-nombre').value.trim();
+    r.pestana=document.getElementById('e-pestana').value;
+    r.kundens=document.getElementById('e-kundens').value.split(/[\s,;]+/).filter(Boolean);
+    r.modelos=document.getElementById('e-modelos').value.split(/\n+/).map(x=>x.trim()).filter(Boolean);
+    r.entregado=document.getElementById('e-entregado').checked;
+    // Actualizar en sheetData
+    if(i>=0&&sheetData[i])sheetData[i]={...sheetData[i],...r};
+    // Invalidar caché para que recargue
+    localStorage.removeItem(CACHE_KEY);
+    sheetLoaded=false;
+    // Enviar update al Apps Script si tiene sheetRow
+    if(cfg.sheetsUrl&&r.sheetRow){
+      fetch(cfg.sheetsUrl,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({action:'updateEntregado',pestana:r.pestana,sheetRow:r.sheetRow,entregado:r.entregado})
+      }).catch(()=>{});
+    }
+  }
+  closeModal();
+  // Refrescar resultados visibles sin recargar todo
+  if(window._srchResults){
+    window._srchResults=window._srchResults.map((x,i)=>{
+      if(editIdx!==null&&x._local&&records[editIdx]&&x.id===records[editIdx].id) return {...records[editIdx],_local:true};
+      if(window._editSheetIdx!==undefined&&i===window._editSheetIdx) return window._editSheetRecord;
+      return x;
+    });
+    renderResultados(window._srchResults);
+  }
   showToast('Cambios guardados ✓','success');
   document.getElementById('toast').style.display='block';
 }

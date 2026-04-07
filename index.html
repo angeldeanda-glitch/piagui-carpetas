@@ -898,6 +898,7 @@ function renderResultados(items){
     const idx=isLocal?records.findIndex(x=>x.id===r.id):-1;
     const clickFn=isLocal&&idx>=0?`openEdit(${idx})`:`openEditSheet(${i})`;
     const fd=r.timestamp?fmtDt(r.timestamp):(r.sheetRow?'Fila '+r.sheetRow:'—');
+    const linkSheet=r.sheetUrl?`<a href="${r.sheetUrl}" target="_blank" onclick="event.stopPropagation()" style="font-size:11px;color:var(--blue-text);text-decoration:none;padding:2px 8px;background:var(--blue-light);border-radius:99px;white-space:nowrap;font-weight:500;">↗ Ver en Sheet</a>`:'';
     return `<div class="result-card" onclick="${clickFn}">
       <div class="rc-name">${r.nombreCarpeta}</div>
       <div class="rc-meta">
@@ -906,6 +907,7 @@ function renderResultados(items){
         <span>${(r.kundens||[]).length} Kundens · ${(r.modelos||[]).length} Modelos</span>
         <span>${r.responsable||''}</span>
         <span>${fd}</span>
+        ${linkSheet}
         <label onclick="event.stopPropagation()" style="display:flex;align-items:center;gap:5px;cursor:pointer;margin-left:auto;">
           <input type="checkbox" ${r.entregado?'checked':''}
             onchange="toggleEntregadoItem(${i},this.checked,${isLocal},${idx})"

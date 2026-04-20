@@ -91,9 +91,10 @@ select:focus,input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(26
 .toast.error{background:var(--red-light);color:var(--red-text);border:1px solid #fecaca;}
 .btn-row{display:flex;gap:10px;}
 .btn-primary{flex:1;height:44px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;transition:opacity .15s,transform .1s;}
-.btn-primary:hover{opacity:.88;}
-.btn-primary:active{transform:scale(.98);}
-.btn-primary.loading{opacity:.6;pointer-events:none;}
+.btn-limpiar-sec{margin-left:auto;font-size:10px;padding:2px 10px;height:22px;background:var(--surface2);border:1px solid var(--border-strong);border-radius:99px;font-family:var(--font);color:var(--text-muted);cursor:pointer;}
+.btn-limpiar-sec:hover{background:var(--border);}
+.izq-sku-row{display:flex;align-items:center;gap:8px;padding:5px 8px;background:var(--surface2);border-radius:var(--radius-sm);font-size:12px;}
+.izq-sku-row input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:var(--amber);}
 .btn-sec{height:44px;padding:0 18px;background:var(--surface2);color:var(--text-muted);border:1px solid var(--border-strong);border-radius:var(--radius-sm);font-family:var(--font);font-size:13px;cursor:pointer;}
 .btn-sec:hover{background:var(--border);}
 
@@ -210,7 +211,7 @@ select:focus,input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(26
   <div class="toast" id="toast"></div>
 
   <div class="card">
-    <div class="card-title">Campos obligatorios</div>
+    <div class="card-title">Campos obligatorios <button class="btn-limpiar-sec" onclick="limpiarObligatorios()">Limpiar</button></div>
     <div class="g3" style="margin-bottom:12px">
       <div class="field">
         <label><span class="req-dot">●</span> Marca + Silueta <span class="fused-tag">se unen</span></label>
@@ -273,7 +274,7 @@ select:focus,input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(26
   </div>
 
   <div class="card">
-    <div class="card-title">Campos opcionales</div>
+    <div class="card-title">Campos opcionales <button class="btn-limpiar-sec" onclick="limpiarOpcionales()">Limpiar</button></div>
     <div class="g3" style="margin-bottom:12px">
       <div class="field">
         <label>Colección</label>
@@ -290,8 +291,18 @@ select:focus,input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(26
         </select>
       </div>
       <div class="field">
-        <label>Proceso</label>
+        <label>Proceso 1</label>
         <select id="proceso" onchange="gen()">
+          <option value="">— no aplica —</option>
+          <option>IMPULSOS</option><option>VENTAS</option><option>RESGUARDO</option>
+          <option>TEMPORADAS PASADAS</option><option>URGENCIAS</option><option>PHOTOSHOP</option>
+          <option>VIDEOS 360</option><option>IZQUIERDOS</option><option>IZQUIERDOS PHOTOSHOP</option>
+          <option>TOMAS IZQUIERDOS COMPLEMENTO</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Proceso 2</label>
+        <select id="proceso2" onchange="gen()">
           <option value="">— no aplica —</option>
           <option>IMPULSOS</option><option>VENTAS</option><option>RESGUARDO</option>
           <option>TEMPORADAS PASADAS</option><option>URGENCIAS</option><option>PHOTOSHOP</option>
@@ -362,7 +373,7 @@ select:focus,input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(26
     <div class="g2">
       <div class="field">
         <label>Pestaña</label>
-        <select id="pestana">
+        <select id="pestana" onchange="checkPieIzq()">
           <option>FOTO VENTAS</option>
           <option>FOTO CATALOGACIÓN</option>
           <option>FOTO IMPULSOS</option>
@@ -608,9 +619,9 @@ function addCode(){
   renderCodes();gen();
 }
 
-function removeCode(type,v){
-  if(type==='k')kundens=kundens.filter(x=>x!==v);
-  else modelos=modelos.filter(x=>x!==v);
+function removeCode(type,idx){
+  if(type==='k') kundens.splice(idx,1);
+  else modelos.splice(idx,1);
   renderCodes();gen();
 }
 
@@ -618,12 +629,13 @@ function renderCodes(){
   const bk=document.getElementById('tags-k');
   const bm=document.getElementById('tags-m');
   bk.innerHTML=kundens.length
-    ?kundens.map(v=>`<span class="tag tag-k">${v}<button onclick="removeCode('k','${v}')">×</button></span>`).join('')
+    ?kundens.map((v,i)=>`<span class="tag tag-k">${v}<button onclick="removeCode('k',${i})">×</button></span>`).join('')
     :'<span class="tag-empty">Sin Kundens aún</span>';
   bm.innerHTML=modelos.length
-    ?modelos.map(v=>`<span class="tag tag-m">${v.length>30?v.slice(0,30)+'…':v}<button onclick="removeCode('m',${JSON.stringify(v)})">×</button></span>`).join('')
+    ?modelos.map((v,i)=>`<span class="tag tag-m">${v.length>30?v.slice(0,30)+'…':v}<button onclick="removeCode('m',${i})">×</button></span>`).join('')
     :'<span class="tag-empty">Sin Modelos aún</span>';
   document.getElementById('sec-m').style.display=modelos.length||codeType==='m'?'block':'none';
+  if(typeof renderIzqSKUs==='function') renderIzqSKUs();
 }
 
 // ── GENERATOR ─────────────────────────────────────────────────────────────────
@@ -634,7 +646,8 @@ function gen(){
   const ms=getMarcaSil(),tmp=document.getElementById('temp').value,yr=document.getElementById('anio').value,
     mkt=document.getElementById('mkt').value,sf=getSkuF(),fecha=document.getElementById('fecha').value.trim(),
     col=document.getElementById('coleccion').value.trim(),sub=document.getElementById('submarca').value,
-    proc=document.getElementById('proceso').value,cat=document.getElementById('categoria').value,
+    proc=document.getElementById('proceso').value,proc2=document.getElementById('proceso2').value,
+    cat=document.getElementById('categoria').value,
     prio=document.getElementById('prioridad').value;
   document.getElementById('prev-ms').textContent=ms||'—';
   document.getElementById('prev-sku').textContent=sf||'—';
@@ -642,7 +655,7 @@ function gen(){
     {v:ms,req:true,fused:true},
     {v:tmp&&yr?tmp+yr:'',req:true,fused:true},
     {v:mkt,req:true},
-    {v:sf,req:true,fused:true},{v:fecha,req:true},{v:col},{v:sub},{v:proc},{v:cat},{v:prio}
+    {v:sf,req:true,fused:true},{v:fecha,req:true},{v:col},{v:sub},{v:proc},{v:proc2},{v:cat},{v:prio}
   ].filter(c=>c.v);
   const nombre=campos.length?campos.map(c=>c.v).join('_'):'—';
   document.getElementById('prev-name').textContent=nombre;
@@ -684,12 +697,14 @@ async function registrar(){
     coleccion:document.getElementById('coleccion').value.trim(),
     submarca:document.getElementById('submarca').value,
     proceso:document.getElementById('proceso').value,
+    proceso2:document.getElementById('proceso2').value,
     categoria:document.getElementById('categoria').value,
     prioridad:document.getElementById('prioridad').value,
     responsable:document.getElementById('responsable').value.trim(),
     kundens:[...kundens],
     modelos:[...modelos],
-    entregado:document.getElementById('reg-entregado').checked
+    entregado:document.getElementById('reg-entregado').checked,
+    pieIzquierdo: getIzqData()
   };
 
   records.push(rec);saveR();
@@ -708,7 +723,8 @@ async function registrar(){
     showToast('Carpeta registrada localmente ✓','success');
   }
   btn.classList.remove('loading');btn.textContent='Registrar carpeta →';
-  limpiar();
+  // Sin autolimpieza — el formulario queda con los datos para facilitar registros similares
+  showToast('Carpeta registrada y enviada a Google Sheets ✓','success');
 }
 
 function limpiar(){

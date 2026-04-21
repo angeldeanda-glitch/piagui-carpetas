@@ -1,1 +1,1109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registro de Carpetas — Grupo Piagui</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+:root{--bg:#f5f4f0;--surface:#fff;--surface2:#f0efe9;--border:rgba(0,0,0,0.08);--border-strong:rgba(0,0,0,0.15);--text:#1a1a18;--text-muted:#6b6b65;--text-hint:#9e9e96;--accent:#1a1a18;--blue:#2563eb;--blue-light:#eff6ff;--blue-text:#1d4ed8;--red:#dc2626;--red-light:#fef2f2;--red-text:#b91c1c;--green:#16a34a;--green-light:#f0fdf4;--green-text:#15803d;--amber:#d97706;--amber-light:#fffbeb;--amber-text:#92400e;--radius:10px;--radius-sm:6px;--font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;padding:2rem 1rem;font-size:14px;line-height:1.5;}
+.container{max-width:900px;margin:0 auto;}
+.nav{display:flex;gap:4px;margin-bottom:1.5rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:6px;}
+.nav-btn{flex:1;padding:8px 6px;border:none;background:none;font-family:var(--font);font-size:12px;font-weight:500;color:var(--text-muted);border-radius:6px;cursor:pointer;transition:all .15s;text-align:center;}
+.nav-btn.active{background:var(--accent);color:#fff;}
+.nav-btn:hover:not(.active){background:var(--surface2);}
+.page{display:none;}.page.active{display:block;}
+.header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.5rem;padding-bottom:1.25rem;border-bottom:1px solid var(--border);}
+.header-left h1{font-size:20px;font-weight:600;letter-spacing:-.02em;margin-bottom:3px;}
+.header-left p{font-size:13px;color:var(--text-muted);}
+.header-badge{font-size:11px;font-weight:500;padding:4px 10px;border-radius:99px;background:var(--accent);color:#fff;letter-spacing:.03em;}
+.sheets-bar{background:var(--amber-light);border:1px solid #fde68a;border-radius:var(--radius);padding:10px 14px;margin-bottom:1rem;display:flex;align-items:center;gap:10px;}
+.sheets-bar.connected{background:var(--green-light);border-color:#bbf7d0;}
+.sheets-dot{width:8px;height:8px;border-radius:50%;background:var(--amber);flex-shrink:0;}
+.sheets-bar.connected .sheets-dot{background:var(--green);}
+.sheets-bar p{font-size:12px;color:var(--amber-text);flex:1;}
+.sheets-bar.connected p{color:var(--green-text);}
+.order-bar{display:flex;flex-wrap:wrap;gap:4px;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;margin-bottom:1rem;}
+.ob{font-size:11px;padding:3px 9px;border-radius:99px;font-weight:500;}
+.ob-req{background:var(--red-light);color:var(--red-text);}
+.ob-fused{background:var(--blue-light);color:var(--blue-text);}
+.ob-opt{background:var(--surface2);color:var(--text-muted);border:1px solid var(--border);}
+.ob-sep{font-size:12px;color:var(--text-hint);}
+.legend{display:flex;gap:12px;margin-bottom:1.25rem;flex-wrap:wrap;}
+.leg{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-muted);}
+.leg-dot{width:8px;height:8px;border-radius:50%;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem 1.5rem;margin-bottom:1rem;}
+.card-title{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:1rem;display:flex;align-items:center;gap:6px;}
+.card-title::after{content:'';flex:1;height:1px;background:var(--border);}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+@media(max-width:640px){.g3{grid-template-columns:1fr 1fr;}.g2{grid-template-columns:1fr;}}
+.field{display:flex;flex-direction:column;gap:5px;}
+.field label{font-size:12px;font-weight:500;color:var(--text-muted);display:flex;align-items:center;gap:4px;}
+.req-dot{color:var(--red);font-size:14px;line-height:1;}
+.fused-tag{font-size:10px;color:var(--blue-text);background:var(--blue-light);padding:1px 6px;border-radius:99px;font-weight:400;}
+.note{font-size:11px;color:var(--text-hint);}
+select,input[type=text],input[type=number],input[type=password]{width:100%;height:38px;border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);font-family:var(--font);font-size:13px;padding:0 10px;outline:none;transition:border-color .15s;appearance:none;-webkit-appearance:none;}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b6b65' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px;}
+select:focus,input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(26,26,24,0.06);}
+.joined{display:flex;}
+.joined select:first-child{border-radius:var(--radius-sm) 0 0 var(--radius-sm);border-right:none;}
+.joined-num{border-radius:0 var(--radius-sm) var(--radius-sm) 0 !important;}
+.joined-sel{border-radius:var(--radius-sm) 0 0 var(--radius-sm) !important;border-right:none !important;width:90px !important;flex-shrink:0;}
+.preview-small{font-size:12px;font-family:var(--mono);font-weight:500;color:var(--blue-text);margin-top:3px;min-height:18px;}
 
+/* KUNDEN / MODELO TABS */
+.code-type-tabs{display:flex;gap:4px;margin-bottom:10px;}
+.ctab{padding:6px 16px;border:1px solid var(--border-strong);border-radius:99px;background:var(--surface);font-family:var(--font);font-size:12px;font-weight:500;cursor:pointer;color:var(--text-muted);transition:all .15s;}
+.ctab.active-k{background:#1d4ed8;color:#fff;border-color:#1d4ed8;}
+.ctab.active-m{background:#92400e;color:#fff;border-color:#92400e;}
+.code-hint{font-size:11px;color:var(--text-hint);margin-bottom:8px;padding:6px 10px;background:var(--surface2);border-radius:var(--radius-sm);}
+.sku-row{display:flex;gap:8px;margin-bottom:8px;}
+.sku-row input{flex:1;}
+.add-btn{height:38px;padding:0 14px;border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--surface2);color:var(--text);font-family:var(--font);font-size:13px;cursor:pointer;white-space:nowrap;}
+.add-btn:hover{background:var(--border);}
+.codes-sections{display:flex;flex-direction:column;gap:10px;margin-top:4px;}
+.code-section-label{font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:5px;display:flex;align-items:center;gap:6px;}
+.col-pill{font-size:10px;padding:1px 8px;border-radius:99px;font-weight:500;}
+.col-b{background:var(--blue-light);color:var(--blue-text);}
+.col-e{background:#fef3c7;color:#92400e;}
+.tags-box{display:flex;flex-wrap:wrap;gap:5px;min-height:36px;padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);align-items:center;}
+.tag{display:flex;align-items:center;gap:4px;font-size:12px;padding:3px 9px;border-radius:99px;font-weight:500;}
+.tag-k{background:var(--blue-light);color:var(--blue-text);}
+.tag-m{background:#fef3c7;color:#92400e;}
+.tag button{background:none;border:none;cursor:pointer;font-size:14px;line-height:1;padding:0;color:inherit;}
+.tag-empty{font-size:12px;color:var(--text-hint);}
+
+.preview-card{background:var(--accent);border-radius:var(--radius);padding:1.25rem 1.5rem;margin-bottom:1rem;color:#fff;}
+.preview-card .plabel{font-size:11px;font-weight:500;opacity:.5;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;}
+.preview-card .pname{font-family:var(--mono);font-size:15px;font-weight:500;word-break:break-all;line-height:1.5;margin-bottom:10px;min-height:24px;}
+.preview-parts{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin-bottom:8px;}
+.pp{font-size:11px;padding:2px 8px;border-radius:99px;font-weight:500;}
+.pp-req{background:rgba(255,255,255,.2);color:#fff;}
+.pp-fused{background:rgba(96,165,250,.4);color:#fff;}
+.pp-opt{background:rgba(255,255,255,.1);color:rgba(255,255,255,.7);}
+.pp-sep{font-size:11px;color:rgba(255,255,255,.3);}
+.pmeta{font-size:12px;opacity:.5;min-height:16px;}
+.toast{display:none;border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;text-align:center;margin-bottom:1rem;font-weight:500;}
+.toast.success{background:var(--green-light);color:var(--green-text);border:1px solid #bbf7d0;}
+.toast.error{background:var(--red-light);color:var(--red-text);border:1px solid #fecaca;}
+.btn-row{display:flex;gap:10px;}
+.btn-primary{flex:1;height:44px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;transition:opacity .15s,transform .1s;}
+.btn-limpiar-sec{margin-left:auto;font-size:10px;padding:2px 10px;height:22px;background:var(--surface2);border:1px solid var(--border-strong);border-radius:99px;font-family:var(--font);color:var(--text-muted);cursor:pointer;}
+.btn-limpiar-sec:hover{background:var(--border);}
+.izq-sku-row{display:flex;align-items:center;gap:8px;padding:5px 8px;background:var(--surface2);border-radius:var(--radius-sm);font-size:12px;}
+.izq-sku-row input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:var(--amber);}
+.btn-sec{height:44px;padding:0 18px;background:var(--surface2);color:var(--text-muted);border:1px solid var(--border-strong);border-radius:var(--radius-sm);font-family:var(--font);font-size:13px;cursor:pointer;}
+.btn-sec:hover{background:var(--border);}
+
+/* PIN */
+.pin-overlay{position:fixed;inset:0;background:rgba(245,244,240,.97);z-index:200;display:flex;align-items:center;justify-content:center;}
+.pin-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;width:300px;text-align:center;}
+.pin-box h2{font-size:16px;font-weight:600;margin-bottom:6px;}
+.pin-box p{font-size:13px;color:var(--text-muted);margin-bottom:1.25rem;}
+.pin-input-big{width:100%;height:48px;text-align:center;font-size:22px;letter-spacing:10px;font-family:var(--mono);font-weight:500;border:1px solid var(--border-strong);border-radius:var(--radius-sm);margin-bottom:8px;outline:none;}
+.pin-input-big:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(26,26,24,.06);}
+.pin-error{font-size:12px;color:var(--red-text);min-height:18px;margin-bottom:8px;}
+.pin-btn{width:100%;height:40px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;}
+.lock-icon{font-size:32px;margin-bottom:12px;}
+
+/* REPORTES */
+.report-tabs{display:flex;gap:4px;margin-bottom:1rem;}
+.rtab{padding:7px 16px;border:1px solid var(--border-strong);border-radius:99px;background:var(--surface);font-family:var(--font);font-size:12px;font-weight:500;cursor:pointer;color:var(--text-muted);}
+.rtab.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+.rep-content{display:none;}.rep-content.active{display:block;}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:1.25rem;}
+.stat-box{background:var(--surface2);border-radius:var(--radius-sm);padding:12px;text-align:center;}
+.stat-num{font-size:24px;font-weight:600;letter-spacing:-.02em;}
+.stat-lbl{font-size:11px;color:var(--text-muted);margin-top:2px;}
+.rep-table{width:100%;border-collapse:collapse;font-size:12px;}
+.rep-table th{text-align:left;padding:7px 10px;background:var(--surface2);color:var(--text-muted);font-weight:500;border-bottom:1px solid var(--border);}
+.rep-table td{padding:7px 10px;border-bottom:1px solid var(--border);vertical-align:top;}
+.rep-table tr:last-child td{border-bottom:none;}
+.mono{font-family:var(--mono);font-size:11px;word-break:break-all;}
+.pbadge{font-size:10px;padding:2px 7px;border-radius:99px;background:var(--blue-light);color:var(--blue-text);font-weight:500;white-space:nowrap;}
+.empty-state{text-align:center;padding:2rem;color:var(--text-hint);font-size:13px;}
+.export-row{display:flex;justify-content:flex-end;margin-bottom:10px;}
+.export-btn{height:30px;padding:0 12px;border:1px solid var(--border-strong);border-radius:99px;background:var(--surface);font-family:var(--font);font-size:11px;cursor:pointer;color:var(--text-muted);}
+
+/* BUSCAR */
+.search-bar{display:flex;gap:8px;margin-bottom:8px;}
+.search-bar input{flex:1;}
+.search-filters{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap;}
+.sf-btn{padding:5px 12px;border:1px solid var(--border-strong);border-radius:99px;background:var(--surface);font-family:var(--font);font-size:11px;font-weight:500;cursor:pointer;color:var(--text-muted);transition:all .15s;}
+.sf-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+.search-source{font-size:11px;color:var(--text-hint);margin-bottom:10px;}
+.result-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;cursor:pointer;transition:border-color .15s;margin-bottom:8px;}
+.result-card:hover{border-color:var(--border-strong);}
+.rc-name{font-family:var(--mono);font-size:13px;font-weight:500;margin-bottom:6px;word-break:break-all;}
+.rc-meta{font-size:12px;color:var(--text-muted);display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.searching-indicator{text-align:center;padding:1.5rem;color:var(--text-hint);font-size:13px;}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border-radius:var(--radius);padding:1.5rem;width:min(620px,95vw);max-height:90vh;overflow-y:auto;}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;}
+.modal-header h2{font-size:16px;font-weight:600;}
+.modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-muted);}
+.modal-actions{display:flex;gap:8px;margin-top:1.25rem;}
+.btn-danger{height:38px;padding:0 14px;background:var(--red-light);color:var(--red-text);border:1px solid #fecaca;border-radius:var(--radius-sm);font-family:var(--font);font-size:13px;cursor:pointer;}
+.chk-row{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border);}
+.chk-row input[type=checkbox]{width:18px;height:18px;cursor:pointer;accent-color:var(--green);}
+.chk-row label{font-size:13px;font-weight:500;cursor:pointer;}
+
+/* CONFIG */
+.help-box{font-size:11px;color:var(--text-muted);line-height:1.7;background:var(--surface2);border-radius:var(--radius-sm);padding:12px;margin-top:10px;}
+.help-box code{font-family:var(--mono);background:rgba(0,0,0,.06);padding:1px 5px;border-radius:3px;font-size:10px;}
+.pin-row{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;}
+.pin-row .field{flex:1;min-width:100px;}
+.pin-row .btn-sec{height:38px;font-size:12px;padding:0 14px;white-space:nowrap;}
+
+.footer{text-align:center;font-size:12px;color:var(--text-hint);margin-top:2rem;padding-top:1rem;border-top:1px solid var(--border);}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+  <div class="header-left">
+    <h1>Registro de carpetas</h1>
+    <p>Fotografía ecommerce · Grupo Piagui</p>
+  </div>
+  <span class="header-badge">FOTO CATALOGACIÓN</span>
+</div>
+
+<div class="nav">
+  <button class="nav-btn active" onclick="showPage('registro')">+ Registrar</button>
+  <button class="nav-btn" onclick="tryPage('reportes')">Reportes</button>
+  <button class="nav-btn" onclick="showPage('buscar')">Buscar / Editar</button>
+  <button class="nav-btn" onclick="tryPage('config')">Configuración</button>
+</div>
+
+<!-- ══════════ REGISTRO ══════════ -->
+<div id="page-registro" class="page active">
+  <div class="sheets-bar" id="sheets-bar">
+    <span class="sheets-dot"></span>
+    <p id="sheets-status">Google Sheets no conectado — registros guardados localmente. Ve a Configuración para conectar.</p>
+  </div>
+
+  <div class="order-bar">
+    <span class="ob ob-fused">Marca+Silueta</span><span class="ob-sep">_</span>
+    <span class="ob ob-req">Temporada</span><span class="ob-sep">_</span>
+    <span class="ob ob-req">Año</span><span class="ob-sep">_</span>
+    <span class="ob ob-req">MKT</span><span class="ob-sep">_</span>
+    <span class="ob ob-fused">M/C+#SKUs</span><span class="ob-sep">_</span>
+    <span class="ob ob-req">Fecha</span><span class="ob-sep">_</span>
+    <span class="ob ob-opt">Colección</span><span class="ob-sep">_</span>
+    <span class="ob ob-opt">Sub marca</span><span class="ob-sep">_</span>
+    <span class="ob ob-opt">Proceso</span><span class="ob-sep">_</span>
+    <span class="ob ob-opt">Categoría</span><span class="ob-sep">_</span>
+    <span class="ob ob-opt">Prioridad</span>
+  </div>
+  <div class="legend">
+    <span class="leg"><span class="leg-dot" style="background:var(--red)"></span> Obligatorio</span>
+    <span class="leg"><span class="leg-dot" style="background:var(--blue)"></span> Se unen sin guión</span>
+    <span class="leg"><span class="leg-dot" style="background:#ccc"></span> Opcional</span>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="card">
+    <div class="card-title">Campos obligatorios <button class="btn-limpiar-sec" onclick="limpiarObligatorios()">Limpiar</button></div>
+    <div class="g3" style="margin-bottom:12px">
+      <div class="field">
+        <label><span class="req-dot">●</span> Marca + Silueta <span class="fused-tag">se unen</span></label>
+        <div class="joined">
+          <select id="marca" onchange="gen()">
+            <option value="">Marca</option>
+            <option>WE</option><option>AP</option><option>CW</option><option>PI</option><option>AB</option>
+            <option>KD</option><option>CT</option><option>SP</option><option>GP</option><option>HP</option>
+            <option>HPK</option><option>WG</option><option>HTP</option><option>GM</option><option>GW</option>
+            <option>NW</option><option>NWK</option><option>GBG</option><option>CTK</option><option>NT</option>
+            <option>SM</option><option>MM</option><option>CA</option><option>PIT</option><option>SS</option>
+            <option>RP</option><option>HA</option><option>ML</option><option>MR</option>
+          </select>
+          <select id="silueta" onchange="gen()">
+            <option value="">Silueta</option>
+            <option>FO</option><option>HB</option><option>AC</option><option>APP</option><option>TFO</option>
+          </select>
+        </div>
+        <div class="preview-small" id="prev-ms">—</div>
+      </div>
+      <div class="field">
+        <label><span class="req-dot">●</span> Temporada + Año</label>
+        <div class="joined">
+          <select id="temp" onchange="gen()" style="border-radius:6px 0 0 6px;border-right:none;">
+            <option value="">Temp.</option><option>SS</option><option>FW</option>
+          </select>
+          <select id="anio" onchange="gen()" style="border-radius:0 6px 6px 0;">
+            <option value="">Año</option>
+            <option>25</option><option>26</option><option>27</option><option>28</option><option>29</option><option>30</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label><span class="req-dot">●</span> MKT</label>
+        <select id="mkt" onchange="gen()">
+          <option value="">—</option>
+          <option>1ER MKT</option><option>2DO MKT</option><option>3ER MKT</option><option>4TO MKT</option>
+        </select>
+      </div>
+    </div>
+    <div class="g2">
+      <div class="field">
+        <label><span class="req-dot">●</span> Muestra/Producto + # SKUs <span class="fused-tag">se unen</span></label>
+        <div class="joined">
+          <select id="tipo-sku" class="joined-sel" onchange="gen()">
+            <option value="">Tipo</option>
+            <option value="M">M — Muestra</option>
+            <option value="C">C — Producto</option>
+          </select>
+          <input type="number" id="cant-sku" class="joined-num" placeholder="# SKUs ej. 12" min="1" oninput="gen()">
+        </div>
+        <div class="preview-small" id="prev-sku">—</div>
+      </div>
+      <div class="field">
+        <label><span class="req-dot">●</span> Fecha de foto (DDMM)</label>
+        <input type="text" id="fecha" placeholder="ej. 2303" maxlength="4" oninput="gen()">
+        <span class="note">Día y mes en que se tomó la foto</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Campos opcionales <button class="btn-limpiar-sec" onclick="limpiarOpcionales()">Limpiar</button></div>
+    <div class="g3" style="margin-bottom:12px">
+      <div class="field">
+        <label>Colección</label>
+        <input type="text" id="coleccion" placeholder="Se llena al entregar" oninput="gen()">
+      </div>
+      <div class="field">
+        <label>Sub marca / Tipo</label>
+        <select id="submarca" onchange="gen()">
+          <option value="">— no aplica —</option>
+          <option>MOMMY BAGS</option><option>BACKPACK</option><option>MARKET PLACE</option>
+          <option>PRIVALIA</option><option>SHOWER SANDALS</option><option>BACK TO SCHOOL</option>
+          <option>SAMS</option><option>SEARS</option><option>COPPEL</option>
+          <option>CAPSULA DE SUBLIMADO</option><option>SANRIO</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Proceso 1</label>
+        <select id="proceso" onchange="gen()">
+          <option value="">— no aplica —</option>
+          <option>IMPULSOS</option><option>VENTAS</option><option>RESGUARDO</option>
+          <option>TEMPORADAS PASADAS</option><option>URGENCIAS</option><option>PHOTOSHOP</option>
+          <option>VIDEOS 360</option><option>IZQUIERDOS</option><option>IZQUIERDOS PHOTOSHOP</option>
+          <option>TOMAS IZQUIERDOS COMPLEMENTO</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Proceso 2</label>
+        <select id="proceso2" onchange="gen()">
+          <option value="">— no aplica —</option>
+          <option>IMPULSOS</option><option>VENTAS</option><option>RESGUARDO</option>
+          <option>TEMPORADAS PASADAS</option><option>URGENCIAS</option><option>PHOTOSHOP</option>
+          <option>VIDEOS 360</option><option>IZQUIERDOS</option><option>IZQUIERDOS PHOTOSHOP</option>
+          <option>TOMAS IZQUIERDOS COMPLEMENTO</option>
+        </select>
+      </div>
+    </div>
+    <div class="g3">
+      <div class="field">
+        <label>Categoría</label>
+        <select id="categoria" onchange="gen()">
+          <option value="">— no aplica —</option>
+          <option>REPROGRAMACIONES</option><option>ADICIONES</option>
+          <option>IMPORTACIÓN</option><option>SIN PEDIDO</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Prioridad</label>
+        <select id="prioridad" onchange="gen()">
+          <option value="">— no aplica —</option>
+          <option>P1</option><option>P2</option><option>P3</option><option>P4</option><option>P5</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Responsable</label>
+        <input type="text" id="responsable" placeholder="Nombre del fotógrafo">
+      </div>
+    </div>
+  </div>
+
+  <!-- KUNDENS Y MODELOS -->
+  <div class="card">
+    <div class="card-title">Códigos de la carpeta</div>
+    <div class="code-type-tabs">
+      <button class="ctab active-k" id="ctab-k" onclick="setCodeType('k')">Kunden — col B</button>
+      <button class="ctab" id="ctab-m" onclick="setCodeType('m')">Modelo — col E</button>
+    </div>
+    <div class="code-hint" id="code-hint">
+      <strong>Kunden (col B):</strong> códigos numéricos (<code>265858</code>) o alfanuméricos con H (<code>H125041</code>)
+    </div>
+    <div class="sku-row">
+      <input type="text" id="code-in" placeholder="Escribe o pega códigos separados por coma, espacio o Enter" onkeydown="if(event.key==='Enter'){event.preventDefault();addCode();}">
+      <button class="add-btn" onclick="addCode()">+ Agregar</button>
+    </div>
+
+    <div class="codes-sections">
+      <div id="sec-k">
+        <div class="code-section-label">Col B — Kunden <span class="col-pill col-b">numérico / H…</span></div>
+        <div class="tags-box" id="tags-k"><span class="tag-empty">Sin Kundens aún</span></div>
+      </div>
+      <div id="sec-m" style="display:none">
+        <div class="code-section-label">Col E — Modelo <span class="col-pill col-e">texto descriptivo</span></div>
+        <div class="tags-box" id="tags-m"><span class="tag-empty">Sin Modelos aún</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="preview-card">
+    <div class="plabel">Nombre de carpeta generado</div>
+    <div class="pname" id="prev-name">—</div>
+    <div class="preview-parts" id="prev-parts"></div>
+    <div class="pmeta" id="prev-meta"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Destino en el Sheet</div>
+    <div class="g2">
+      <div class="field">
+        <label>Pestaña</label>
+        <select id="pestana" onchange="checkPieIzq()">
+          <option>FOTO VENTAS</option>
+          <option>FOTO CATALOGACIÓN</option>
+          <option>FOTO IMPULSOS</option>
+          <option>VIDEOS 360</option>
+          <option>CLIENTES ESPECIALES</option>
+          <option>TOMAS ESPECIALES / COMPLEMENTOS</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Estatus de entrega</div>
+    <div class="chk-row">
+      <input type="checkbox" id="reg-entregado" style="width:18px;height:18px;cursor:pointer;accent-color:var(--green);">
+      <label for="reg-entregado" style="font-size:13px;font-weight:500;cursor:pointer;">Carpeta entregada a siguiente área (marca col F en el Sheet)</label>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-sec" onclick="limpiar()">Limpiar</button>
+    <button class="btn-primary" id="btn-reg" onclick="registrar()">Registrar carpeta →</button>
+  </div>
+</div>
+
+<!-- ══════════ REPORTES ══════════ -->
+<div id="page-reportes" class="page">
+  <div class="report-tabs">
+    <button class="rtab active" onclick="switchRep('diario',this)">Diario</button>
+    <button class="rtab" onclick="switchRep('semanal',this)">Semanal</button>
+    <button class="rtab" onclick="switchRep('mensual',this)">Mensual</button>
+  </div>
+  <div id="rep-diario" class="rep-content active"></div>
+  <div id="rep-semanal" class="rep-content"></div>
+  <div id="rep-mensual" class="rep-content"></div>
+</div>
+
+  <!-- ══════════ BUSCAR ══════════ -->
+<div id="page-buscar" class="page">
+  <div class="card">
+    <div class="card-title">Buscar y editar carpetas</div>
+    <div class="search-bar">
+      <input type="text" id="srch" placeholder="Nombre, Kunden, Modelo, pestaña, responsable…" oninput="buscarDebounce()">
+      <button class="add-btn" onclick="buscar()">Buscar</button>
+      <button class="add-btn" onclick="localStorage.removeItem(CACHE_KEY);sheetLoaded=false;sheetData=[];cargarSheetData(true);" style="background:var(--blue-light);color:var(--blue-text);border-color:#bfdbfe;">↺ Recargar</button>
+    </div>
+    <div class="search-filters">
+      <button class="sf-btn active" onclick="setFiltro('',this)">Todas</button>
+      <button class="sf-btn" onclick="setFiltro('FOTO VENTAS',this)">Foto Ventas</button>
+      <button class="sf-btn" onclick="setFiltro('FOTO CATALOGACIÓN',this)">Foto Catalogación</button>
+      <button class="sf-btn" onclick="setFiltro('FOTO IMPULSOS',this)">Foto Impulsos</button>
+      <button class="sf-btn" onclick="setFiltro('VIDEOS 360',this)">Videos 360</button>
+      <button class="sf-btn" onclick="setFiltro('CLIENTES ESPECIALES',this)">Clientes Esp.</button>
+      <button class="sf-btn" onclick="setFiltro('TOMAS ESPECIALES / COMPLEMENTOS',this)">Tomas Esp.</button>
+      <button class="sf-btn" style="background:var(--red-light);color:var(--red-text);border-color:#fecaca;" onclick="setFiltroEntregado('pendiente',this)">⏳ Pendientes</button>
+      <button class="sf-btn" style="background:var(--green-light);color:var(--green-text);border-color:#bbf7d0;" onclick="setFiltroEntregado('entregado',this)">✓ Entregadas</button>
+    </div>
+    <div class="search-source" id="srch-source"></div>
+    <div id="srch-results"></div>
+  </div>
+</div>
+
+<!-- ══════════ CONFIG ══════════ -->
+<div id="page-config" class="page">
+  <div class="card">
+    <div class="card-title">Conexión con Google Sheets</div>
+    <div class="field" style="margin-bottom:12px">
+      <label>URL del Apps Script (Web App)</label>
+      <input type="text" id="cfg-url" placeholder="https://script.google.com/macros/s/.../exec">
+    </div>
+    <button class="btn-primary" style="max-width:200px;height:38px;font-size:13px;" onclick="saveConfig()">Guardar conexión</button>
+    <div class="help-box">
+      <strong>Cómo conectar paso a paso:</strong><br>
+      1. Abre tu Google Sheet → <strong>Extensiones → Apps Script</strong><br>
+      2. Borra todo el contenido y pega el código Apps Script que te daré abajo<br>
+      3. Guarda (Ctrl+S) → <strong>Implementar → Nueva implementación</strong><br>
+      4. Tipo: <em>Aplicación web</em> · Ejecutar como: <em>Yo (tu cuenta)</em> · Acceso: <em>Cualquier usuario</em><br>
+      5. Haz clic en <strong>Implementar</strong>, autoriza los permisos y copia la URL<br>
+      6. Pégala en el campo de arriba y guarda<br><br>
+      <strong>Estructura que escribe el script en el Sheet:</strong><br>
+      <code>A = CARPETA</code> &nbsp; <code>B = KUNDEN</code> &nbsp; <code>E = MODELO</code> &nbsp; <code>F = ENTREGADO (checkbox)</code>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Seguridad — PIN de acceso</div>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px;">El PIN protege Reportes y Configuración. PIN por defecto: <code style="font-family:var(--mono);background:var(--surface2);padding:1px 6px;border-radius:4px;">1234</code></p>
+    <div class="pin-row">
+      <div class="field"><label>PIN actual</label><input type="password" id="pin-cur" maxlength="8" placeholder="••••" style="height:38px;"></div>
+      <div class="field"><label>PIN nuevo</label><input type="password" id="pin-new" maxlength="8" placeholder="••••" style="height:38px;"></div>
+      <div class="field"><label>Confirmar</label><input type="password" id="pin-conf" maxlength="8" placeholder="••••" style="height:38px;"></div>
+      <button class="btn-sec" style="height:38px;font-size:12px;padding:0 14px;" onclick="cambiarPin()">Cambiar</button>
+    </div>
+    <div id="pin-msg" style="font-size:12px;margin-top:8px;min-height:18px;"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Datos locales</div>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:10px;" id="local-count"></p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn-sec" onclick="exportCSV()">Exportar CSV completo</button>
+    </div>
+  </div>
+</div>
+
+<div class="footer">Grupo Piagui · Área de Fotografía Ecommerce · v3.0</div>
+</div>
+
+<!-- PIN OVERLAY -->
+<div class="pin-overlay" id="pin-overlay" style="display:none;">
+  <div class="pin-box">
+    <div class="lock-icon">🔒</div>
+    <h2>Acceso restringido</h2>
+    <p id="pin-lbl">Ingresa tu PIN para continuar</p>
+    <input type="password" class="pin-input-big" id="pin-field" maxlength="8" onkeydown="if(event.key==='Enter')checkPin()">
+    <div class="pin-error" id="pin-err"></div>
+    <button class="pin-btn" onclick="checkPin()">Entrar</button>
+  </div>
+</div>
+
+<!-- MODAL EDITAR -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Editar carpeta</h2>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div id="modal-body"></div>
+    <div class="modal-actions">
+      <button class="btn-primary" style="flex:1;" onclick="saveEdit()">Guardar cambios</button>
+      <button class="btn-danger" onclick="delRecord()">Eliminar</button>
+      <button class="btn-sec" onclick="closeModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const DB='piagui_v3',CFG='piagui_cfg3';
+const CACHE_KEY='piagui_sheet_cache';
+const CACHE_TTL=2*60*60*1000;
+const SHEETS_URL_DEFAULT='https://script.google.com/macros/s/AKfycbyq8e5VFk3ZSJpre79wj08hmLJExsOQ05L4yoG3yzk2T9S4rmtKAkdm2sHPnUZxP9G0/exec';
+let records=JSON.parse(localStorage.getItem(DB)||'[]');
+let cfgStored=JSON.parse(localStorage.getItem(CFG)||'{}');
+if(!cfgStored.sheetsUrl){cfgStored.sheetsUrl=SHEETS_URL_DEFAULT;localStorage.setItem(CFG,JSON.stringify(cfgStored));}
+let cfg={pin:cfgStored.pin||'1234', sheetsUrl:cfgStored.sheetsUrl||SHEETS_URL_DEFAULT};
+let kundens=[]; // col B — numérico o H...
+let modelos=[];  // col E — texto
+let codeType='k';
+let editIdx=null,pendingPage=null;
+
+function saveR(){localStorage.setItem(DB,JSON.stringify(records));}
+function saveCfg(){localStorage.setItem(CFG,JSON.stringify(cfg));}
+
+// ── helpers ──────────────────────────────────────────────────────────────────
+function isKunden(v){return /^[0-9]+$/.test(v)||/^H[0-9]+$/i.test(v);}
+
+function todayStr(){return new Date().toISOString().slice(0,10);}
+function weekRange(){
+  const n=new Date(),d=n.getDay(),mon=new Date(n);
+  mon.setDate(n.getDate()-((d+6)%7));
+  const sun=new Date(mon);sun.setDate(mon.getDate()+6);
+  return [mon.toISOString().slice(0,10),sun.toISOString().slice(0,10)];
+}
+function monthRange(){
+  const n=new Date(),y=n.getFullYear(),m=n.getMonth();
+  return [new Date(y,m,1).toISOString().slice(0,10),new Date(y,m+1,0).toISOString().slice(0,10)];
+}
+function fmtDt(iso){
+  const d=new Date(iso);
+  return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+
+// ── PIN ───────────────────────────────────────────────────────────────────────
+function tryPage(p){
+  pendingPage=p;
+  document.getElementById('pin-lbl').textContent='Ingresa tu PIN para acceder a '+p.charAt(0).toUpperCase()+p.slice(1);
+  document.getElementById('pin-field').value='';
+  document.getElementById('pin-err').textContent='';
+  document.getElementById('pin-overlay').style.display='flex';
+  setTimeout(()=>document.getElementById('pin-field').focus(),80);
+}
+function checkPin(){
+  const v=document.getElementById('pin-field').value;
+  if(v===cfg.pin){document.getElementById('pin-overlay').style.display='none';showPage(pendingPage);}
+  else{document.getElementById('pin-err').textContent='PIN incorrecto. Intenta de nuevo.';document.getElementById('pin-field').value='';}
+}
+function cambiarPin(){
+  const cur=document.getElementById('pin-cur').value;
+  const nw=document.getElementById('pin-new').value;
+  const cf=document.getElementById('pin-conf').value;
+  const msg=document.getElementById('pin-msg');
+  if(cur!==cfg.pin){msg.style.color='var(--red-text)';msg.textContent='PIN actual incorrecto.';return;}
+  if(nw.length<4){msg.style.color='var(--red-text)';msg.textContent='El PIN nuevo debe tener al menos 4 dígitos.';return;}
+  if(nw!==cf){msg.style.color='var(--red-text)';msg.textContent='Los PINs nuevos no coinciden.';return;}
+  cfg.pin=nw;saveCfg();
+  msg.style.color='var(--green-text)';msg.textContent='PIN cambiado correctamente ✓';
+  ['pin-cur','pin-new','pin-conf'].forEach(id=>document.getElementById(id).value='');
+}
+
+// ── NAV ───────────────────────────────────────────────────────────────────────
+function showPage(p){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach((x,i)=>x.classList.toggle('active',i==={registro:0,reportes:1,buscar:2,config:3}[p]));
+  document.getElementById('page-'+p).classList.add('active');
+  if(p==='reportes')renderReports();
+  if(p==='buscar')cargarSheetData(false);
+  if(p==='config')updateConfigUI();
+}
+
+// ── CODE TABS ─────────────────────────────────────────────────────────────────
+function setCodeType(t){
+  codeType=t;
+  document.getElementById('ctab-k').className='ctab'+(t==='k'?' active-k':'');
+  document.getElementById('ctab-m').className='ctab'+(t==='m'?' active-m':'');
+  document.getElementById('sec-m').style.display=t==='m'||modelos.length?'block':'none';
+  document.getElementById('code-hint').innerHTML=t==='k'
+    ?'<strong>Kunden (col B):</strong> códigos numéricos (<code>265858</code>) o alfanuméricos con H (<code>H125041</code>)'
+    :'<strong>Modelo (col E):</strong> texto descriptivo, uno por línea o separado por coma — ej: <code>WEVALENTINE2 METALLIC INOX SYN 126206007414</code>';
+  document.getElementById('code-in').placeholder=t==='k'
+    ?'Ej: 265858, H125041, 260810…'
+    :'Pega uno o varios modelos separados por coma o salto de línea';
+  document.getElementById('code-in').focus();
+}
+
+function autoSetCodeType(){
+  const t=document.getElementById('tipo-sku').value;
+  if(t==='M') setCodeType('k');
+  if(t==='C') setCodeType('m');
+}
+
+function addCode(){
+  const inp=document.getElementById('code-in');
+  const raw=inp.value.trim();
+  if(!raw)return;
+  // split by comma, semicolon or newline; space only for kunden mode
+  const parts=codeType==='k'
+    ? raw.split(/[\s,;]+/).filter(Boolean)
+    : raw.split(/[,;\n]+/).map(x=>x.trim()).filter(Boolean);
+  parts.forEach(v=>{
+    v=v.trim();if(!v)return;
+    if(codeType==='k'){if(!kundens.includes(v))kundens.push(v);}
+    else{if(!modelos.includes(v))modelos.push(v);}
+  });
+  inp.value='';
+  renderCodes();gen();
+}
+
+function removeCode(type,idx){
+  if(type==='k') kundens.splice(idx,1);
+  else modelos.splice(idx,1);
+  renderCodes();gen();
+}
+
+function renderCodes(){
+  const bk=document.getElementById('tags-k');
+  const bm=document.getElementById('tags-m');
+  bk.innerHTML=kundens.length
+    ?kundens.map((v,i)=>`<span class="tag tag-k">${v}<button onclick="removeCode('k',${i})">×</button></span>`).join('')
+    :'<span class="tag-empty">Sin Kundens aún</span>';
+  bm.innerHTML=modelos.length
+    ?modelos.map((v,i)=>`<span class="tag tag-m">${v.length>30?v.slice(0,30)+'…':v}<button onclick="removeCode('m',${i})">×</button></span>`).join('')
+    :'<span class="tag-empty">Sin Modelos aún</span>';
+  document.getElementById('sec-m').style.display=modelos.length||codeType==='m'?'block':'none';
+  if(typeof renderIzqSKUs==='function') renderIzqSKUs();
+}
+
+// ── GENERATOR ─────────────────────────────────────────────────────────────────
+function getMarcaSil(){const m=document.getElementById('marca').value,s=document.getElementById('silueta').value;return m&&s?m+s:'';}
+function getSkuF(){const t=document.getElementById('tipo-sku').value,n=document.getElementById('cant-sku').value.trim();return t&&n?t+n:'';}
+
+function gen(){
+  const ms=getMarcaSil(),tmp=document.getElementById('temp').value,yr=document.getElementById('anio').value,
+    mkt=document.getElementById('mkt').value,sf=getSkuF(),fecha=document.getElementById('fecha').value.trim(),
+    col=document.getElementById('coleccion').value.trim(),sub=document.getElementById('submarca').value,
+    proc=document.getElementById('proceso').value,proc2=document.getElementById('proceso2').value,
+    cat=document.getElementById('categoria').value,
+    prio=document.getElementById('prioridad').value;
+  document.getElementById('prev-ms').textContent=ms||'—';
+  document.getElementById('prev-sku').textContent=sf||'—';
+  const campos=[
+    {v:ms,req:true,fused:true},
+    {v:tmp&&yr?tmp+yr:'',req:true,fused:true},
+    {v:mkt,req:true},
+    {v:sf,req:true,fused:true},{v:fecha,req:true},{v:col},{v:sub},{v:proc},{v:proc2},{v:cat},{v:prio}
+  ].filter(c=>c.v);
+  const nombre=campos.length?campos.map(c=>c.v).join('_'):'—';
+  document.getElementById('prev-name').textContent=nombre;
+  document.getElementById('prev-parts').innerHTML=campos.map((c,i)=>{
+    const cls=c.fused?'pp pp-fused':c.req?'pp pp-req':'pp pp-opt';
+    const sep=i<campos.length-1?'<span class="pp-sep">_</span>':'';
+    return `<span class="${cls}">${c.v}</span>${sep}`;
+  }).join('');
+  const meta=[];
+  if(kundens.length)meta.push(kundens.length+' Kunden(s)');
+  if(modelos.length)meta.push(modelos.length+' Modelo(s)');
+  const r=document.getElementById('responsable').value.trim();
+  if(r)meta.push('Resp: '+r);
+  document.getElementById('prev-meta').textContent=meta.join(' · ');
+}
+
+// ── REGISTRAR ─────────────────────────────────────────────────────────────────
+async function registrar(){
+  const reqs=['marca','silueta','temp','anio','mkt','tipo-sku','cant-sku','fecha'];
+  if(reqs.some(id=>!document.getElementById(id).value.trim())){
+    showToast('Completa todos los campos obligatorios (●)','error');return;
+  }
+  const nombre=document.getElementById('prev-name').textContent;
+  if(nombre==='—'){showToast('Genera primero el nombre de carpeta','error');return;}
+
+  const rec={
+    id:Date.now(),
+    timestamp:new Date().toISOString(),
+    nombreCarpeta:nombre,
+    pestana:document.getElementById('pestana').value,
+    marca:document.getElementById('marca').value,
+    silueta:document.getElementById('silueta').value,
+    temporada:document.getElementById('temp').value,
+    anio:document.getElementById('anio').value,
+    mkt:document.getElementById('mkt').value,
+    tipoSku:document.getElementById('tipo-sku').value,
+    cantSku:document.getElementById('cant-sku').value,
+    fecha:document.getElementById('fecha').value.trim(),
+    coleccion:document.getElementById('coleccion').value.trim(),
+    submarca:document.getElementById('submarca').value,
+    proceso:document.getElementById('proceso').value,
+    proceso2:document.getElementById('proceso2').value,
+    categoria:document.getElementById('categoria').value,
+    prioridad:document.getElementById('prioridad').value,
+    responsable:document.getElementById('responsable').value.trim(),
+    kundens:[...kundens],
+    modelos:[...modelos],
+    entregado:document.getElementById('reg-entregado').checked,
+    pieIzquierdo: getIzqData()
+  };
+
+  records.push(rec);saveR();
+  // Limpiar caché del Sheet para que refleje el nuevo registro
+  localStorage.removeItem(CACHE_KEY);
+  sheetLoaded=false;
+  const btn=document.getElementById('btn-reg');
+  btn.classList.add('loading');btn.textContent='Guardando…';
+
+  if(cfg.sheetsUrl){
+    try{
+      await fetch(cfg.sheetsUrl,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(rec)});
+      showToast('Carpeta registrada y enviada a Google Sheets ✓','success');
+    }catch(e){showToast('Guardado localmente (Sheets no respondió)','success');}
+  }else{
+    showToast('Carpeta registrada localmente ✓','success');
+  }
+  btn.classList.remove('loading');btn.textContent='Registrar carpeta →';
+  // Sin autolimpieza — el formulario queda con los datos para facilitar registros similares
+  showToast('Carpeta registrada y enviada a Google Sheets ✓','success');
+}
+
+function limpiar(){
+  ['marca','silueta','temp','anio','mkt','tipo-sku','submarca','proceso','categoria','prioridad'].forEach(id=>document.getElementById(id).selectedIndex=0);
+  ['fecha','coleccion','cant-sku','responsable','code-in'].forEach(id=>document.getElementById(id).value='');
+  kundens=[];modelos=[];
+  document.getElementById('reg-entregado').checked=false;
+  renderCodes();gen();
+}
+
+function showToast(msg,type){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast '+type;t.style.display='block';
+  setTimeout(()=>t.style.display='none',4500);
+}
+
+// ── REPORTES ──────────────────────────────────────────────────────────────────
+function switchRep(r,el){
+  document.querySelectorAll('.rtab').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.rep-content').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('rep-'+r).classList.add('active');
+  renderReports();
+}
+
+function filterRange(s,e){return records.filter(r=>r.timestamp.slice(0,10)>=s&&r.timestamp.slice(0,10)<=e);}
+
+function buildRep(items,showPestana){
+  if(!items.length)return'<div class="empty-state">Sin registros en este período</div>';
+  const totalSkus=items.reduce((a,r)=>a+parseInt(r.cantSku||0),0);
+  const totalK=items.reduce((a,r)=>a+(r.kundens||[]).length,0);
+  const totalM=items.reduce((a,r)=>a+(r.modelos||[]).length,0);
+  let html=`<div class="stat-grid">
+    <div class="stat-box"><div class="stat-num">${items.length}</div><div class="stat-lbl">Carpetas</div></div>
+    <div class="stat-box"><div class="stat-num">${totalSkus}</div><div class="stat-lbl">SKUs totales</div></div>
+    <div class="stat-box"><div class="stat-num">${totalK}</div><div class="stat-lbl">Kundens</div></div>
+    <div class="stat-box"><div class="stat-num">${totalM}</div><div class="stat-lbl">Modelos</div></div>
+  </div>`;
+  if(showPestana){
+    const bp={};items.forEach(r=>{bp[r.pestana]=(bp[r.pestana]||0)+1;});
+    html+=`<div class="card" style="margin-bottom:1rem"><div class="card-title">Distribución por pestaña</div><div style="display:flex;flex-wrap:wrap;gap:6px">`;
+    Object.entries(bp).forEach(([k,v])=>{html+=`<span style="font-size:12px;padding:4px 12px;background:var(--blue-light);color:var(--blue-text);border-radius:99px;font-weight:500">${k}: ${v}</span>`;});
+    html+='</div></div>';
+  }
+  const rows=items.slice().reverse().map(r=>{
+    const ks=(r.kundens||[]).slice(0,4).join(', ')+(((r.kundens||[]).length>4)?` +${r.kundens.length-4}`:'');
+    return `<tr>
+      <td class="mono">${r.nombreCarpeta}</td>
+      <td>${r.cantSku||0}</td>
+      ${showPestana?`<td><span class="pbadge">${r.pestana}</span></td>`:''}
+      <td style="color:var(--text-muted)">${ks||'—'}</td>
+      <td style="color:var(--text-hint);white-space:nowrap">${fmtDt(r.timestamp)}</td>
+    </tr>`;
+  }).join('');
+  const ids=items.map(r=>r.id);
+  html+=`<div class="export-row"><button class="export-btn" onclick='exportRange(${JSON.stringify(ids)})'>Exportar CSV</button></div>
+  <table class="rep-table"><thead><tr><th>Carpeta</th><th>SKUs</th>${showPestana?'<th>Pestaña</th>':''}<th>Kundens (preview)</th><th>Registrado</th></tr></thead><tbody>${rows}</tbody></table>`;
+  return html;
+}
+
+function renderReports(){
+  const t=todayStr(),[ws,we]=weekRange(),[ms,me]=monthRange();
+  document.getElementById('rep-diario').innerHTML=buildRep(filterRange(t,t),false);
+  document.getElementById('rep-semanal').innerHTML=buildRep(filterRange(ws,we),false);
+  document.getElementById('rep-mensual').innerHTML=buildRep(filterRange(ms,me),true);
+}
+
+// ── BUSCAR ────────────────────────────────────────────────────────────────────
+let srchFiltro='';
+let srchFiltroEntregado=''; // 'pendiente', 'entregado' o ''
+let srchTimer=null;
+let srchCache={};
+let sheetData=[];
+let sheetLoaded=false;
+let sheetLoading=false;
+
+// Función requerida por showPage
+function cargarSheetData(forzar){
+  if(!cfg.sheetsUrl){
+    document.getElementById('srch-source').textContent='Sin conexión a Sheets — mostrando registros locales';
+    sheetLoaded=true;sheetData=[];buscar();return;
+  }
+  if(!forzar&&sheetLoaded){buscar();return;}
+  if(sheetLoading)return;
+  sheetLoading=true;
+  sheetLoaded=false;
+  document.getElementById('srch-results').innerHTML='<div class="searching-indicator">Cargando carpetas del Sheet…</div>';
+
+  // Intentar caché local primero
+  if(!forzar){
+    try{
+      const cached=JSON.parse(localStorage.getItem(CACHE_KEY)||'null');
+      if(cached&&cached.data&&cached.ts&&(Date.now()-cached.ts)<CACHE_TTL){
+        sheetData=cached.data;sheetLoaded=true;sheetLoading=false;
+        const mins=Math.round((Date.now()-cached.ts)/60000);
+        document.getElementById('srch-source').innerHTML=`Sheet en caché · ${sheetData.length} carpetas · hace ${mins} min · <a href="#" onclick="cargarSheetData(true);return false;" style="color:var(--blue-text)">Recargar</a>`;
+        buscar();return;
+      }
+    }catch(e){}
+  }
+
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),30000);
+  fetch(cfg.sheetsUrl+'?action=all&pestana=',{signal:controller.signal})
+    .then(r=>{
+      clearTimeout(timer);
+      return r.text();
+    })
+    .then(txt=>{
+      let data;
+      try{data=JSON.parse(txt);}catch(e){throw new Error('Respuesta inválida');}
+      if(data.status==='ok'){
+        sheetData=data.results||[];
+        sheetLoaded=true;
+        localStorage.setItem(CACHE_KEY,JSON.stringify({data:sheetData,ts:Date.now()}));
+        document.getElementById('srch-source').innerHTML=`Sheet cargado · ${sheetData.length} carpetas · <a href="#" onclick="cargarSheetData(true);return false;" style="color:var(--blue-text)">Recargar</a>`;
+      }else{throw new Error(data.message||'Error desconocido');}
+    })
+    .catch(e=>{
+      console.log('Error cargando Sheet:',e.message);
+      document.getElementById('srch-source').textContent='No se pudo cargar el Sheet — usando registros locales';
+      sheetData=[];sheetLoaded=true;
+    })
+    .finally(()=>{sheetLoading=false;buscar();});
+}
+
+function setFiltro(p,el){
+  srchFiltro=p;
+  srchFiltroEntregado='';
+  document.querySelectorAll('.sf-btn').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+  buscar();
+}
+
+function setFiltroEntregado(tipo,el){
+  srchFiltroEntregado=tipo;
+  srchFiltro='';
+  document.querySelectorAll('.sf-btn').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+  buscar();
+}
+
+function buscarDebounce(){
+  clearTimeout(srchTimer);
+  srchTimer=setTimeout(buscar,300);
+}
+
+function buscar(){
+  const q=(document.getElementById('srch').value||'').toLowerCase().trim();
+  const src=document.getElementById('srch-source');
+
+  // Si el Sheet está cargado usarlo, si no usar local
+  const base=sheetLoaded&&sheetData.length>0 ? sheetData : records.map(r=>({...r,_local:true}));
+  const esLocal=!(sheetLoaded&&sheetData.length>0);
+
+  // Marcar registros locales
+  let todos=sheetLoaded&&sheetData.length>0
+    ? sheetData.map(r=>({...r,_local:false}))
+    : records.map(r=>({...r,_local:true}));
+
+  // Filtrar por pestaña
+  if(srchFiltro) todos=todos.filter(r=>r.pestana===srchFiltro);
+
+  // Filtrar por estatus entregado
+  if(srchFiltroEntregado==='pendiente') todos=todos.filter(r=>!r.entregado);
+  if(srchFiltroEntregado==='entregado') todos=todos.filter(r=>!!r.entregado);
+
+  // Filtrar por búsqueda
+  const res=q
+    ?todos.filter(r=>
+        (r.nombreCarpeta||'').toLowerCase().includes(q)||
+        (r.responsable||'').toLowerCase().includes(q)||
+        (r.kundens||[]).some(k=>k.toLowerCase().includes(q))||
+        (r.modelos||[]).some(m=>m.toLowerCase().includes(q))
+      )
+    :todos.slice().reverse().slice(0,50);
+
+  src.textContent=(esLocal?'Registros locales':'Sheet · '+todos.length+' carpetas')+' · '+res.length+' resultado(s)';
+  renderResultados(res);
+}
+
+function renderResultados(items){
+  const c=document.getElementById('srch-results');
+  if(!items||!items.length){c.innerHTML='<div class="empty-state">Sin resultados</div>';return;}
+  window._srchResults=items;
+  c.innerHTML=items.slice(0,100).map((r,i)=>{
+    const isLocal=!!r._local;
+    const idx=isLocal?records.findIndex(x=>x.id===r.id):-1;
+    const clickFn=isLocal&&idx>=0?`openEdit(${idx})`:`openEditSheet(${i})`;
+    const fd=r.timestamp?fmtDt(r.timestamp):(r.sheetRow?'Fila '+r.sheetRow:'—');
+    const linkSheet=r.sheetUrl?`<a href="${r.sheetUrl}" target="_blank" onclick="event.stopPropagation()" style="font-size:11px;color:var(--blue-text);text-decoration:none;padding:2px 8px;background:var(--blue-light);border-radius:99px;white-space:nowrap;font-weight:500;">↗ Ver en Sheet</a>`:'';
+    return `<div class="result-card" onclick="${clickFn}">
+      <div class="rc-name">${r.nombreCarpeta}</div>
+      <div class="rc-meta">
+        <span class="pbadge">${r.pestana}</span>
+        <span>${r.cantSku||(r.kundens||[]).length+(r.modelos||[]).length} SKUs</span>
+        <span>${(r.kundens||[]).length} Kundens · ${(r.modelos||[]).length} Modelos</span>
+        <span>${r.responsable||''}</span>
+        <span>${fd}</span>
+        ${linkSheet}
+        <label onclick="event.stopPropagation()" style="display:flex;align-items:center;gap:5px;cursor:pointer;margin-left:auto;">
+          <input type="checkbox" ${r.entregado?'checked':''}
+            onchange="toggleEntregadoItem(${i},this.checked,${isLocal},${idx})"
+            onclick="event.stopPropagation()"
+            style="width:16px;height:16px;accent-color:var(--green);cursor:pointer;">
+          <span style="font-size:11px;font-weight:500;color:${r.entregado?'var(--green-text)':'var(--text-hint)'}">
+            ${r.entregado?'Entregada ✓':'Pendiente'}
+          </span>
+        </label>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function toggleEntregadoItem(i,val,isLocal,localIdx){
+  const r=window._srchResults[i];
+  if(isLocal&&localIdx>=0){records[localIdx].entregado=val;saveR();}
+  else if(r&&cfg.sheetsUrl&&r.sheetRow){
+    if(r)r.entregado=val;
+    try{await fetch(cfg.sheetsUrl,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'updateEntregado',pestana:r.pestana,sheetRow:r.sheetRow,entregado:val})});}catch(e){}
+  }
+}
+
+// Abrir modal para resultados del Sheet
+function openEditSheet(i){
+  const r=window._srchResults[i];
+  if(!r)return;
+  editIdx=null;
+  window._editSheetRecord=r;
+  window._editSheetIdx=i;
+  const ks=(r.kundens||[]).join(', ');
+  const ms=(r.modelos||[]).join('\n');
+  document.getElementById('modal-body').innerHTML=`
+    <div style="background:var(--blue-light);color:var(--blue-text);border-radius:var(--radius-sm);padding:8px 12px;font-size:12px;margin-bottom:12px;">
+      Registro del Google Sheet · Pestaña: <strong>${r.pestana}</strong> · Fila ${r.sheetRow||'—'}
+    </div>
+    <div class="g2" style="margin-bottom:12px">
+      <div class="field"><label>Nombre carpeta</label><input type="text" id="e-nombre" value="${r.nombreCarpeta}"></div>
+      <div class="field"><label>Pestaña</label>
+        <select id="e-pestana">${['FOTO VENTAS','FOTO CATALOGACIÓN','FOTO IMPULSOS','VIDEOS 360','CLIENTES ESPECIALES','TOMAS ESPECIALES / COMPLEMENTOS'].map(p=>`<option${r.pestana===p?' selected':''}>${p}</option>`).join('')}</select>
+      </div>
+    </div>
+    <div class="field" style="margin-bottom:12px">
+      <label>Kundens — col B <span class="col-pill col-b">numérico / H…</span></label>
+      <input type="text" id="e-kundens" value="${ks}" placeholder="265858, H125041…">
+    </div>
+    <div class="field" style="margin-bottom:12px">
+      <label>Modelos — col E <span class="col-pill col-e">texto</span></label>
+      <textarea id="e-modelos" style="width:100%;min-height:60px;border:1px solid var(--border-strong);border-radius:var(--radius-sm);font-family:var(--font);font-size:13px;padding:8px 10px;resize:vertical">${ms}</textarea>
+    </div>
+    <div class="chk-row">
+      <input type="checkbox" id="e-entregado" ${r.entregado?'checked':''}>
+      <label for="e-entregado">Carpeta entregada a siguiente área (col F)</label>
+    </div>`;
+  document.getElementById('modal').classList.add('open');
+}
+
+// ── MODAL EDITAR ──────────────────────────────────────────────────────────────
+function openEdit(idx){
+  editIdx=idx;
+  const r=records[idx];
+  const ks=(r.kundens||[]).join(', ');
+  const ms=(r.modelos||[]).join('\n');
+  document.getElementById('modal-body').innerHTML=`
+    <div class="g2" style="margin-bottom:12px">
+      <div class="field"><label>Nombre carpeta</label><input type="text" id="e-nombre" value="${r.nombreCarpeta}"></div>
+      <div class="field"><label>Pestaña</label>
+        <select id="e-pestana">${['FOTO VENTAS','FOTO CATALOGACIÓN','FOTO IMPULSOS','VIDEOS 360','CLIENTES ESPECIALES','TOMAS ESPECIALES / COMPLEMENTOS'].map(p=>`<option${r.pestana===p?' selected':''}>${p}</option>`).join('')}</select>
+      </div>
+    </div>
+    <div class="g2" style="margin-bottom:12px">
+      <div class="field"><label>Responsable</label><input type="text" id="e-resp" value="${r.responsable||''}"></div>
+      <div class="field"><label># SKUs</label><input type="number" id="e-csku" value="${r.cantSku||''}"></div>
+    </div>
+    <div class="field" style="margin-bottom:12px">
+      <label>Kundens — col B (separados por coma) <span class="col-pill col-b">numérico / H…</span></label>
+      <input type="text" id="e-kundens" value="${ks}" placeholder="265858, H125041, 260810…">
+    </div>
+    <div class="field" style="margin-bottom:12px">
+      <label>Modelos — col E (uno por línea) <span class="col-pill col-e">texto</span></label>
+      <textarea id="e-modelos" style="width:100%;min-height:60px;border:1px solid var(--border-strong);border-radius:var(--radius-sm);font-family:var(--font);font-size:13px;padding:8px 10px;resize:vertical" placeholder="WEVALENTINE2 METALLIC INOX SYN…">${ms}</textarea>
+    </div>
+    <div class="chk-row">
+      <input type="checkbox" id="e-entregado" ${r.entregado?'checked':''}>
+      <label for="e-entregado">Carpeta entregada a siguiente área (checkbox col F)</label>
+    </div>`;
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal(){document.getElementById('modal').classList.remove('open');editIdx=null;}
+
+function saveEdit(){
+  if(editIdx===null&&!window._editSheetRecord)return;
+  if(editIdx!==null){
+    // Edición local
+    const r=records[editIdx];
+    r.nombreCarpeta=document.getElementById('e-nombre').value.trim();
+    r.pestana=document.getElementById('e-pestana').value;
+    r.responsable=document.getElementById('e-resp').value.trim();
+    r.cantSku=document.getElementById('e-csku').value;
+    r.kundens=document.getElementById('e-kundens').value.split(/[\s,;]+/).filter(Boolean);
+    r.modelos=document.getElementById('e-modelos').value.split(/\n+/).map(x=>x.trim()).filter(Boolean);
+    r.entregado=document.getElementById('e-entregado').checked;
+    r.editadoEn=new Date().toISOString();
+    saveR();
+  } else {
+    // Edición desde Sheet — actualizar en sheetData y enviar al Apps Script
+    const r=window._editSheetRecord;
+    const i=window._editSheetIdx;
+    r.nombreCarpeta=document.getElementById('e-nombre').value.trim();
+    r.pestana=document.getElementById('e-pestana').value;
+    r.kundens=document.getElementById('e-kundens').value.split(/[\s,;]+/).filter(Boolean);
+    r.modelos=document.getElementById('e-modelos').value.split(/\n+/).map(x=>x.trim()).filter(Boolean);
+    r.entregado=document.getElementById('e-entregado').checked;
+    // Actualizar en sheetData
+    if(i>=0&&sheetData[i])sheetData[i]={...sheetData[i],...r};
+    // Invalidar caché para que recargue
+    localStorage.removeItem(CACHE_KEY);
+    sheetLoaded=false;
+    // Enviar update al Apps Script si tiene sheetRow
+    if(cfg.sheetsUrl&&r.sheetRow){
+      fetch(cfg.sheetsUrl,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({action:'updateEntregado',pestana:r.pestana,sheetRow:r.sheetRow,entregado:r.entregado})
+      }).catch(()=>{});
+    }
+  }
+  closeModal();
+  buscar();
+  showToast('Cambios guardados ✓','success');
+  document.getElementById('toast').style.display='block';
+}
+
+function toggleEntregado(idx,val){
+  records[idx].entregado=val;
+  records[idx].editadoEn=new Date().toISOString();
+  saveR();buscar();
+}
+
+function delRecord(){
+  if(editIdx===null)return;
+  if(!confirm('¿Eliminar este registro? Esta acción no se puede deshacer.'))return;
+  records.splice(editIdx,1);saveR();closeModal();buscar();
+}
+
+// ── CONFIG ────────────────────────────────────────────────────────────────────
+function saveConfig(){
+  cfg.sheetsUrl=document.getElementById('cfg-url').value.trim();
+  saveCfg();updateSheetsBar();
+  showToast('Conexión guardada ✓','success');
+  document.getElementById('toast').style.display='block';
+}
+function updateConfigUI(){
+  if(cfg.sheetsUrl)document.getElementById('cfg-url').value=cfg.sheetsUrl;
+  document.getElementById('local-count').textContent=`Registros guardados localmente: ${records.length}`;
+}
+function updateSheetsBar(){
+  const bar=document.getElementById('sheets-bar');
+  const st=document.getElementById('sheets-status');
+  if(cfg.sheetsUrl){bar.classList.add('connected');st.textContent='Google Sheets conectado ✓ — los registros se envían automáticamente.';}
+  else{bar.classList.remove('connected');st.textContent='Google Sheets no conectado — registros guardados localmente. Ve a Configuración para conectar.';}
+}
+
+// ── EXPORT CSV ────────────────────────────────────────────────────────────────
+function toCSV(rows){
+  const cols=['id','timestamp','nombreCarpeta','pestana','marca','silueta','temporada','anio','mkt','tipoSku','cantSku','fecha','coleccion','submarca','proceso','categoria','prioridad','responsable','kundens','modelos','entregado'];
+  const hdr=cols.join(',');
+  const lines=rows.map(r=>cols.map(c=>{
+    let v=r[c];
+    if(Array.isArray(v))v=v.join('|');
+    return '"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+  }).join(','));
+  return hdr+'\n'+lines.join('\n');
+}
+function exportCSV(){dl(toCSV(records),'piagui_completo_'+todayStr()+'.csv');}
+function exportRange(ids){dl(toCSV(records.filter(r=>ids.includes(r.id))),'piagui_reporte_'+todayStr()+'.csv');}
+function dl(csv,name){const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download=name;a.click();}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+updateSheetsBar();gen();renderCodes();
+</script>
+</body>
+</html>

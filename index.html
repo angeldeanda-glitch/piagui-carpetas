@@ -1127,6 +1127,20 @@ function exportCSV(){dl(toCSV(records),'piagui_completo_'+todayStr()+'.csv');}
 function exportRange(ids){dl(toCSV(records.filter(r=>ids.includes(r.id))),'piagui_reporte_'+todayStr()+'.csv');}
 function dl(csv,name){const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download=name;a.click();}
 
+
+function limpiarObligatorios(){
+  ['marca','silueta','temp','anio','mkt','tipo-sku'].forEach(id=>document.getElementById(id).selectedIndex=0);
+  ['cant-sku','fecha'].forEach(id=>document.getElementById(id).value='');
+  gen();
+}
+function limpiarOpcionales(){
+  ['submarca','proceso','proceso2','categoria','categoria2','prioridad'].forEach(id=>document.getElementById(id).selectedIndex=0);
+  ['coleccion','responsable'].forEach(id=>document.getElementById(id).value='');
+  const sets=document.getElementById('chk-sets');
+  if(sets) sets.checked=false;
+  gen();
+}
+
 // ── INIT ──────────────────────────────────────────────────────────────────────
 updateSheetsBar();gen();renderCodes();
 </script>

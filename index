@@ -218,7 +218,7 @@ select:focus,input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(26
         <div class="joined">
           <select id="marca" onchange="gen()">
             <option value="">Marca</option>
-            <option>WE</option><option>AP</option><option>CW</option><option>PI</option><option>AB</option>
+            <option>WE</option><option>WET</option><option>AP</option><option>CW</option><option>PI</option><option>AB</option>
             <option>KD</option><option>CT</option><option>SP</option><option>GP</option><option>HP</option>
             <option>HPK</option><option>WG</option><option>HTP</option><option>GM</option><option>GW</option>
             <option>NW</option><option>NWK</option><option>GBG</option><option>CTK</option><option>NT</option>
@@ -300,6 +300,13 @@ select:focus,input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(26
           <option>TOMAS IZQUIERDOS COMPLEMENTO</option>
         </select>
       </div>
+      <div class="field" style="justify-content:flex-end;padding-bottom:2px;">
+        <label style="margin-bottom:6px;">SETS</label>
+        <div class="chk-row" style="padding:8px 12px;">
+          <input type="checkbox" id="chk-sets" style="width:18px;height:18px;cursor:pointer;accent-color:var(--accent);" onchange="gen()">
+          <label for="chk-sets" style="font-size:13px;font-weight:500;cursor:pointer;">Esta carpeta es SETS</label>
+        </div>
+      </div>
       <div class="field">
         <label>Proceso 2</label>
         <select id="proceso2" onchange="gen()">
@@ -313,8 +320,16 @@ select:focus,input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(26
     </div>
     <div class="g3">
       <div class="field">
-        <label>Categoría</label>
+        <label>Categoría 1</label>
         <select id="categoria" onchange="gen()">
+          <option value="">— no aplica —</option>
+          <option>REPROGRAMACIONES</option><option>ADICIONES</option>
+          <option>IMPORTACIÓN</option><option>SIN PEDIDO</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Categoría 2</label>
+        <select id="categoria2" onchange="gen()">
           <option value="">— no aplica —</option>
           <option>REPROGRAMACIONES</option><option>ADICIONES</option>
           <option>IMPORTACIÓN</option><option>SIN PEDIDO</option>
@@ -647,7 +662,9 @@ function gen(){
     mkt=document.getElementById('mkt').value,sf=getSkuF(),fecha=document.getElementById('fecha').value.trim(),
     col=document.getElementById('coleccion').value.trim(),sub=document.getElementById('submarca').value,
     proc=document.getElementById('proceso').value,proc2=document.getElementById('proceso2').value,
-    cat=document.getElementById('categoria').value,
+    cat=document.getElementById('categoria').value,cat2=document.getElementById('categoria2').value,
+    prio=document.getElementById('prioridad').value,
+    sets=document.getElementById('chk-sets')?.checked;
     prio=document.getElementById('prioridad').value;
   document.getElementById('prev-ms').textContent=ms||'—';
   document.getElementById('prev-sku').textContent=sf||'—';
@@ -655,7 +672,7 @@ function gen(){
     {v:ms,req:true,fused:true},
     {v:tmp&&yr?tmp+yr:'',req:true,fused:true},
     {v:mkt,req:true},
-    {v:sf,req:true,fused:true},{v:fecha,req:true},{v:col},{v:sub},{v:proc},{v:proc2},{v:cat},{v:prio}
+    {v:sf,req:true,fused:true},{v:fecha,req:true},{v:col},{v:sub},{v:proc},{v:proc2},{v:sets?'SETS':''},{v:cat},{v:cat2},{v:prio}
   ].filter(c=>c.v);
   const nombre=campos.length?campos.map(c=>c.v).join('_'):'—';
   document.getElementById('prev-name').textContent=nombre;
@@ -698,7 +715,9 @@ async function registrar(){
     submarca:document.getElementById('submarca').value,
     proceso:document.getElementById('proceso').value,
     proceso2:document.getElementById('proceso2').value,
+    sets:document.getElementById('chk-sets')?.checked||false,
     categoria:document.getElementById('categoria').value,
+    categoria2:document.getElementById('categoria2').value,
     prioridad:document.getElementById('prioridad').value,
     responsable:document.getElementById('responsable').value.trim(),
     kundens:[...kundens],

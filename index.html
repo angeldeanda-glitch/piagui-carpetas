@@ -658,15 +658,20 @@ function getMarcaSil(){const m=document.getElementById('marca').value,s=document
 function getSkuF(){const t=document.getElementById('tipo-sku').value,n=document.getElementById('cant-sku').value.trim();return t&&n?t+n:'';}
 
 function gen(){
-  const ms=getMarcaSil(),tmp=document.getElementById('temp').value,yr=document.getElementById('anio').value,
-    mkt=document.getElementById('mkt').value,sf=getSkuF(),fecha=document.getElementById('fecha').value.trim(),
-    col=document.getElementById('coleccion').value.trim(),sub=document.getElementById('submarca').value,
-    proc=document.getElementById('proceso').value,
-    proc2=document.getElementById('proceso2').value,
-    sets=document.getElementById('chk-sets')?.checked,
-    cat=document.getElementById('categoria').value,
-    cat2=document.getElementById('categoria2').value,
-    prio=document.getElementById('prioridad').value;
+  const ms=getMarcaSil();
+  const tmp=document.getElementById('temp').value;
+  const yr=document.getElementById('anio').value;
+  const mkt=document.getElementById('mkt').value;
+  const sf=getSkuF();
+  const fecha=document.getElementById('fecha').value.trim();
+  const col=document.getElementById('coleccion').value.trim();
+  const sub=document.getElementById('submarca').value;
+  const proc=document.getElementById('proceso').value;
+  const proc2=document.getElementById('proceso2').value;
+  const sets=document.getElementById('chk-sets')?.checked?'SETS':'';
+  const cat=document.getElementById('categoria').value;
+  const cat2=document.getElementById('categoria2').value;
+  const prio=document.getElementById('prioridad').value;
     prio=document.getElementById('prioridad').value;
   document.getElementById('prev-ms').textContent=ms||'—';
   document.getElementById('prev-sku').textContent=sf||'—';
@@ -674,7 +679,7 @@ function gen(){
     {v:ms,req:true,fused:true},
     {v:tmp&&yr?tmp+yr:'',req:true,fused:true},
     {v:mkt,req:true},
-    {v:sf,req:true,fused:true},{v:fecha,req:true},{v:col},{v:sub},{v:proc},{v:proc2},{v:sets?'SETS':''},{v:cat},{v:cat2},{v:prio}
+    {v:sf,req:true,fused:true},{v:fecha,req:true},{v:col},{v:sub},{v:proc},{v:proc2},{v:sets},{v:cat},{v:cat2},{v:prio}
   ].filter(c=>c.v);
   const nombre=campos.length?campos.map(c=>c.v).join('_'):'—';
   document.getElementById('prev-name').textContent=nombre;

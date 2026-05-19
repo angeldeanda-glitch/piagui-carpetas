@@ -661,10 +661,12 @@ function gen(){
   const ms=getMarcaSil(),tmp=document.getElementById('temp').value,yr=document.getElementById('anio').value,
     mkt=document.getElementById('mkt').value,sf=getSkuF(),fecha=document.getElementById('fecha').value.trim(),
     col=document.getElementById('coleccion').value.trim(),sub=document.getElementById('submarca').value,
-    proc=document.getElementById('proceso').value,proc2=document.getElementById('proceso2').value,
-    cat=document.getElementById('categoria').value,cat2=document.getElementById('categoria2').value,
-    prio=document.getElementById('prioridad').value,
-    sets=document.getElementById('chk-sets')?.checked;
+    proc=document.getElementById('proceso').value,
+    proc2=document.getElementById('proceso2').value,
+    sets=document.getElementById('chk-sets')?.checked,
+    cat=document.getElementById('categoria').value,
+    cat2=document.getElementById('categoria2').value,
+    prio=document.getElementById('prioridad').value;
     prio=document.getElementById('prioridad').value;
   document.getElementById('prev-ms').textContent=ms||'—';
   document.getElementById('prev-sku').textContent=sf||'—';
